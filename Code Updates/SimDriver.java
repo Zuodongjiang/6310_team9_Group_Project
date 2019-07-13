@@ -1,3 +1,5 @@
+package team_9;
+
 import java.io.File;
 import java.time.chrono.IsoChronology;
 import java.util.ArrayList;
@@ -9,9 +11,6 @@ public class SimDriver {
 	private static final int DEFAULT_WIDTH = 100;
 	private static final int DEFAULT_HEIGHT = 100;
 
-	private Integer lawnHeight;
-	private Integer lawnWidth;
-	private Integer[][] lawnInfo;
 	
 	private List<Integer> mowerKnowPosition = new ArrayList<>();
 	private static Mower[] mowerList;
@@ -33,7 +32,7 @@ public class SimDriver {
 	private final int CRATER_CODE = 2;
 	private final int FENCE_CODE = 3;
 	private final int CHARGE_CODE = 4;
-	private final int MOWER_CODE = 5;
+	
 
 	private int total_cut = 0;
 	private int total_grass = 0;
@@ -62,12 +61,6 @@ public class SimDriver {
 		yDIR_MAP.put("southwest", -1);
 		yDIR_MAP.put("west", 0);
 		yDIR_MAP.put("northwest", 1);
-		type.put(0, "empty");
-		type.put(1, "grass");
-		type.put(2, "crater");
-		type.put(3, "fence");
-		type.put(4, "mower");
-		type.put(5, "charge");
 	}
 
 	public void uploadStartingFile(String testFileName) {
