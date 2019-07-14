@@ -7,18 +7,20 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
+import OsMowSis.Lawnmower;
+
+
+
 public class SimDriver {
 	private static final int DEFAULT_WIDTH = 100;
 	private static final int DEFAULT_HEIGHT = 100;
 
 	
-	private List<Integer> mowerKnowPosition = new ArrayList<>();
 	private static Mower[] mowerList;
 	private int[][] mowerPosition;
 	private Lawn lawn;
 	
-	int mapWidth = 2 * 10 + 1;
-	int mapHeight = 2 * 10 + 1;
+	
 	
 	private HashMap<String, Integer> xDIR_MAP;
 	private HashMap<String, Integer> yDIR_MAP;
@@ -40,6 +42,8 @@ public class SimDriver {
 	private int numTurn = 0;
 	private int activeMowerCount = 0;
 	private static int mowerCount = 0;
+	private int collision_delay = 0;
+	
 
 	public SimDriver() {
 		xDIR_MAP = new HashMap<>();
@@ -69,53 +73,63 @@ public class SimDriver {
 		try {
 			Scanner takeCommand = new Scanner(new File(testFileName));
 			String[] tokens;
-			int i, j, k;
 
 			// read in the lawn information
 			tokens = takeCommand.nextLine().split(DELIMITER);
-			lawnWidth = Integer.parseInt(tokens[0]);
+			Integer lawnWidth = Integer.parseInt(tokens[0]); //line 1
 			tokens = takeCommand.nextLine().split(DELIMITER);
-			lawnHeight = Integer.parseInt(tokens[0]);
-
-			// generate the lawn information
-			lawnInfo = new Integer[lawnWidth][lawnHeight];
-			for (i = 0; i < lawnWidth; i++) {
-				for (j = 0; j < lawnHeight; j++) {
-					lawnInfo[i][j] = GRASS_CODE;
-				}
-			}
+			Integer lawnHeight = Integer.parseInt(tokens[0]); //line 2
+			
 
 			// Initilize mower list
 			tokens = takeCommand.nextLine().split(DELIMITER);
-			int numMowers = Integer.parseInt(tokens[0]);
+			int numMowers = Integer.parseInt(tokens[0]);  //line 3
 			activeMowerCount = numMowers;
 			mowerCount = numMowers;
 			mowerList = new Mower[numMowers];
+			
+			//collision delay
+			tokens = takeCommand.nextLine().split(DELIMITER);
+			collision_delay = Integer.parseInt(tokens[0]);  //line 4
+			
+			//energy capacity
+			tokens = takeCommand.nextLine().split(DELIMITER);
+			int energy_capacity = Integer.parseInt(tokens[0]);  //line 5
+			
 			mowerPosition = new int[numMowers][2];
-			for (k = 0; k < numMowers; k++) {
-				tokens = takeCommand.nextLine().split(DELIMITER);
+			for (int k = 0; k < numMowers; k++) {
+				tokens = takeCommand.nextLine().split(DELIMITER); //line 6
 				int px = Integer.parseInt(tokens[0]); // 3
 				int py = Integer.parseInt(tokens[1]); // 2
 				String mowerDirection = tokens[2];
-				mowerList[k] = new Mower(mowerDirection, k);
+				mowerList[k] = new Mower(mowerDirection, k, energy_capacity, numMowers); //mower id start from 0
 				mowerPosition[k][0] = px;
 				mowerPosition[k][1] = py;
-				lawnInfo[px][py] = 5 + k;
 
 			}
 
-			// read in the crater information
+			// read in the crater information 
+            tokens = takeCommand.nextLine().split(DELIMITER);
+            int numCraters = Integer.parseInt(tokens[0]); //line 7
+            int [][] craterLocation = new int [numCraters][2];
+            if (numCraters==0){ //there might be no crater
+            	craterLocation = null;
+            } else {	            
+	            for (int k = 0; k < numCraters; k++) {
+	                tokens = takeCommand.nextLine().split(DELIMITER); //line 8
+	                Integer craterX = Integer.parseInt(tokens[0]);
+	                Integer craterY = Integer.parseInt(tokens[1]);
+	                craterLocation[k][0] = craterX;
+	                craterLocation[k][1] = craterY;
+	            }
+            }
+
 			tokens = takeCommand.nextLine().split(DELIMITER);
-			int numCraters = Integer.parseInt(tokens[0]);
-			// find total_grass needs to be cut
-			total_grass = lawnWidth * lawnHeight - numCraters - numMowers;
-			for (k = 0; k < numCraters; k++) {
-				tokens = takeCommand.nextLine().split(DELIMITER);
-				// place a crater at the given location
-				lawnInfo[Integer.parseInt(tokens[0])][Integer.parseInt(tokens[1])] = CRATER_CODE;
-			}
-			tokens = takeCommand.nextLine().split(DELIMITER);
-			numTurn = Integer.parseInt(tokens[0]);
+			numTurn = Integer.parseInt(tokens[0]); //line 9
+			
+			// create Lawn instance
+            this.lawn = new Lawn(lawnWidth, lawnHeight, numMowers, mowerPosition, numCraters, craterLocation);
+    
 			takeCommand.close();
 			// renderLawn();
 			// scan();
@@ -124,9 +138,38 @@ public class SimDriver {
 			System.out.println("");
 		}
 	}
-
-
 	
+	public void scan(int mowerID){
+		Mower mower = owerList[mowerID];
+		int x = mowerPosition[mowerID][0];
+		int y = mowerPosition[mowerID][1];
+		String[] scanned_info = lawn.scanedByMower(x,y);
+		for(int i=0;i<8;i++){			
+			//mower location
+			int relativeX = this.currentRelativeLocation[0];
+			int relativeY = this.currentRelativeLocation[1];
+			//location of square to be checked
+			String direction = directions[i];
+			int xDir = this.xDIR_MAP.get(direction);
+			int yDir = this.yDIR_MAP.get(direction);
+			String square = this.checkSquare(x + xDir, y + yDir);
+			if (square.equals(Lawnmower.OUTSIDE)){
+				this.resizeMap(xDir, yDir);
+				//update mower's relative location
+				relativeX = mower.getMowerRelativeX();
+				relativeY = mower.getMowerRelativeY();
+			}
+			//update knowledge map
+			String element = scanned_info[i];
+			this.knowledgeMap[x+xDir][y+yDir] = element;
+			System.out.print(element);
+			if(i!=7) System.out.print(",");			
+		}
+		System.out.print("\n");
+		
+	}
+	
+	/***
 	public void scan(int mowerID) {
 		total_step++;
 		Mower mower = mowerList[mowerID];
@@ -187,6 +230,7 @@ public class SimDriver {
 		res.deleteCharAt(res.length() - 1);
 		System.out.println(res.toString());
 	}
+	***/
 	
 	private boolean findMowerPosition(Mower mower) {
 		return mower.left && mower.right && mower.up && mower.down;
@@ -206,6 +250,7 @@ public class SimDriver {
 		}
 		
 	}
+	
 	
 	public void mergeMap(int mowerID) {
 		Mower mower = mowerList[mowerID];

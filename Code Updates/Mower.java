@@ -1,3 +1,5 @@
+package team_9;
+
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -7,16 +9,25 @@ import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 
+import OsMowSis.Lawnmower;
+
 public class Mower {
 	public int mowerID = 0;
+	public static CommunicationChannel cc;
 	public static SimDriver sim;
+
+	//hashmap to define mower movement on coordinate for each direction
+    private static HashMap<String, Integer> xDIR_MAP = new HashMap<>();
+    private static HashMap<String, Integer> yDIR_MAP = new HashMap<>();
+    private static HashMap<Integer, String> type = new HashMap<>();
+	
 	// discovered: a list of mower that the mower can see, the Point records the relative position of these mowers
 	public Map<Integer, Point> discovered;
+
 	Integer mowerX, mowerY;
 	private String mowerDirection = "North";
-	private static HashMap<String, Integer> xDIR_MAP;
-	private static HashMap<String, Integer> yDIR_MAP;
-	private HashMap<Integer, String> type = new HashMap<>();
+
+	
 	private String trackAction;
 	private Integer trackMoveDistance;
 	private String trackNewDirection;
@@ -26,12 +37,12 @@ public class Mower {
 	private final int GRASS_CODE = 1;
 	private final int CRATER_CODE = 2;
 	private final int FENCE_CODE = 3;
-	private final int MOWER_CODE = 4;
-	private final int CHARGE_CODE = 5;
+	private final int CHARGE_CODE = 4;
+	
 	private boolean crashed = false;
 //	int dx = 10;
 //	int dy = 10;
-	int mapWidth = 2 * 10 + 1;
+	int mapWidth = 2 * 15 + 1;
 	int mapHeight = 2 * 10 + 1;
 	int[][] mowerMap = new int[mapWidth][mapHeight];
 	boolean up = false;
@@ -42,15 +53,18 @@ public class Mower {
 	private String[] dirs = { "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest" };
 	private List<String> path = new ArrayList<>();
 	boolean enable = true;
-	int CurEnergy = 0;
+	int curEnergy = 0;
 	int maxEnergy = 0;
 
-	public Mower(String direction, int id) {
+	public Mower(String direction, int id, int energy_capacity, int mowerNo) {
 		mowerDirection = direction;
 		mowerID = id;
+		maxEnergy = energy_capacity;
+		curEnergy = energy_capacity;
+				
 		mowerX = 10;
 		mowerY = 10;
-		xDIR_MAP = new HashMap<>();
+		
 		xDIR_MAP.put("north", 0);
 		xDIR_MAP.put("northeast", 1);
 		xDIR_MAP.put("east", 1);
@@ -60,7 +74,7 @@ public class Mower {
 		xDIR_MAP.put("west", -1);
 		xDIR_MAP.put("northwest", -1);
 
-		yDIR_MAP = new HashMap<>();
+		
 		yDIR_MAP.put("north", 1);
 		yDIR_MAP.put("northeast", 1);
 		yDIR_MAP.put("east", 0);
@@ -69,17 +83,27 @@ public class Mower {
 		yDIR_MAP.put("southwest", -1);
 		yDIR_MAP.put("west", 0);
 		yDIR_MAP.put("northwest", 1);
-		type.put(0, "empty");
-		type.put(1, "grass");
-		type.put(2, "crater");
-		type.put(3, "fence");
-		type.put(4, "mower");
-		type.put(5, "charge");
+		
+		
+		type.put(EMPTY_CODE, "empty");
+		type.put(GRASS_CODE, "grass");
+		type.put(CRATER_CODE, "crater");
+		type.put(FENCE_CODE, "fence");
+		type.put(CHARGE_CODE, "charge");
+		for(int i=5;i<mowerNo+5;i++){
+			String mowerName = String.format("mower_%d", i-4);
+			type.put(i, mowerName);//mowerName start from 1
+		}
+		
+		
 		for (int i = 0; i < mowerMap.length; i++) {
 			for (int j = 0; j < mowerMap[0].length; j++) {
-				mowerMap[i][j] = -1;
+				mowerMap[i][j] = -1; //unknown
 			}
 		}
+		
+		//put self on the map
+		mowerMap[mowerX][mowerY] = mowerID+5; //mower code start from 5 (id=0)
 	}
 
 	private boolean needScan() {
@@ -129,6 +153,31 @@ public class Mower {
 		return false;
 	}
 	
+	public void updateMowerMap(String[] scanedInfo){		
+		String[] directions = {"north","northeast","east","southeast","south","southwest","west","northwest"};
+		for(int i=0;i<8;i++){			
+			//location of square to be checked
+			String direction = directions[i];
+			int xDir = Mower.xDIR_MAP.get(direction);
+			int yDir = Mower.yDIR_MAP.get(direction);
+			String square = this.checkSquare(mowerX + xDir, mowerY + yDir);
+			if (square.equals(Lawnmower.OUTSIDE)){
+				this.resizeMap(xDir, yDir);
+				//update mower's relative location
+				x = this.currentRelativeLocation[0];
+				y = this.currentRelativeLocation[1];
+			}
+			//update knowledge map
+			String element = scanedInfo[i];
+			this.knowledgeMap[x+xDir][y+yDir] = element;
+			System.out.print(element);
+			if(i!=7) System.out.print(",");			
+		}
+		System.out.print("\n");
+	}
+	
+	
+	/***
 	private void updateMowerMap(int dx, int dy) {
 		int x_pos = mowerX;
 		int y_pos = mowerY;
@@ -140,8 +189,9 @@ public class Mower {
 		
 		mowerX += dx;
 		mowerY += dy;
-		mowerMap[mowerX][mowerY] = MOWER_CODE;
+		mowerMap[mowerX][mowerY] = mowerID+5;
 	}
+	***/
 	
 	private void turning(String dir) {
 		trackAction = "move";
@@ -314,4 +364,39 @@ public class Mower {
 		System.out.println("mowerX: " + mowerX + " mowerY: " + mowerY);
 	}
 
+	private void resizeMap(int xDir, int yDir){
+		int newWidth = this.mapWidth + Math.abs(xDir);
+		int newHeight = this.mapHeight + Math.abs(yDir);
+		int[][] newMap = new int[newWidth][newHeight];
+		//fill the map with unknown
+		for (int i = 0; i < newWidth; i++) {
+			for (int j = 0; j < newHeight; j++) {
+				newMap[i][j] = -1;
+			}
+		}
+		
+		//transfer info to new map
+		int a = 0;
+		int b = 0;
+		if (xDir<0) a = 1;	
+		if (yDir<0) b = 1;			
+		for (int i=0; i<this.mapWidth; i++){
+			for (int j=0; j<this.mapHeight; j++){
+				newMap[i+a][j+b] = this.mowerMap[i][j];
+			}
+		}
+		this.mapWidth = newWidth;
+		this.mapHeight = newHeight;
+		this.mowerMap = newMap;	
+		this.mowerX += a;
+		this.mowerY += b;
+	}
+	
+	public int getMowerRelativeX(){
+		return mowerX;
+	}
+	
+	public int getMowerRelativeY(){
+		return mowerY;
+	}
 }

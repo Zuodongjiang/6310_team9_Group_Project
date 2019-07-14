@@ -4,14 +4,24 @@ package team_9;
 import java.util.HashMap;
 
 
-public class Lawn {	
-	private Integer lawnHeight; //1~10 inclusive
-	private Integer lawnWidth;  //1~15 inclusive
-	private Integer[][] lawnMap;
 
-	private Integer craterNumber;
-	private Integer originalGrassNumber;
-	private Integer grassNumberCut;
+
+public class Lawn {	
+	//hashmap to define mower movement on coordinate for each direction
+    private static HashMap<String, Integer> xDIR_MAP = new HashMap<>();;
+    private static HashMap<String, Integer> yDIR_MAP = new HashMap<>();;
+    // type Enum: empty, grass, crate...
+ 	private static HashMap<Integer, String> type = new HashMap<>();;
+ 	
+    
+	private int lawnHeight; //1~10 inclusive
+	private int lawnWidth;  //1~15 inclusive
+	private int[][] lawnMap;
+	private int[][] energyLocation;
+
+	private int craterNumber;
+	private int originalGrassNumber;
+	private int grassNumberCut;
 
 	//elements code
 	private final int EMPTY_CODE = 0;
@@ -21,91 +31,105 @@ public class Lawn {
 	private final int CHARGE_CODE = 4;
 	//mower start from 5(mowerID=0)
 	
-	// type Enum: empty, grass, crate...
-	private HashMap<Integer, String> type = new HashMap<>();
 	
 	
-	public Lawn(Integer lawnWidth, Integer lawnHeight, Integer mowerNo,String[][] mowerLD, Integer craterNo, Integer[][] craterLocation){	       
-		type.put(0, "empty");
-		type.put(1, "grass");
-		type.put(2, "crater");
-		type.put(3, "fence");
-		type.put(4, "charge");
+	
+	public Lawn(int lawnWidth, int lawnHeight, int mowerNo, int[][] mowerPosition, int craterNo, int[][] craterLocation){	
+		//set hashmap for mower movement
         
+        xDIR_MAP.put("north", 0);
+        xDIR_MAP.put("northeast", 1);
+        xDIR_MAP.put("east", 1);
+        xDIR_MAP.put("southeast", 1);
+        xDIR_MAP.put("south", 0);
+        xDIR_MAP.put("southwest", -1);
+        xDIR_MAP.put("west", -1);
+        xDIR_MAP.put("northwest", -1);
+
         
-		lawnMap = new Integer[lawnWidth][lawnHeight];
+        yDIR_MAP.put("north", 1);
+        yDIR_MAP.put("northeast", 1);
+        yDIR_MAP.put("east", 0);
+        yDIR_MAP.put("southeast", -1);
+        yDIR_MAP.put("south", -1);
+        yDIR_MAP.put("southwest", -1);
+        yDIR_MAP.put("west", 0);
+        yDIR_MAP.put("northwest", 1);		
+		
+        
+		type.put(EMPTY_CODE, "empty");
+		type.put(GRASS_CODE, "grass");
+		type.put(CRATER_CODE, "crater");
+		type.put(FENCE_CODE, "fence");
+		type.put(CHARGE_CODE, "charge");		
+		for(int i=5;i<mowerNo+5;i++){
+			String mowerName = String.format("mower_%d", i-4);
+			type.put(i, mowerName);//mowerName start from 1
+		}
+        
+		lawnMap = new int[lawnWidth][lawnHeight];
 		//fill the map with grass
 		for (int i = 0; i < lawnWidth; i++) {
             for (int j = 0; j < lawnHeight; j++) {
-                lawnMap[i][j] = Lawn.GRASS;
+                lawnMap[i][j] = GRASS_CODE;
             }
         }
 		
 		this.lawnWidth = lawnWidth;
 		this.lawnHeight = lawnHeight;
-		lawnmowerNumberLeft = mowerNo;
-		lawnmowers = new Lawnmower[mowerNo];
-		mowerLocations = new Integer[mowerNo][2];
-		for(int id=0; id<mowerNo;id++){
-			String mowerDirection = mowerLD[id][2]; //get mower direction 
-			lawnmowers[id] = new Lawnmower(id, mowerDirection);
-			try {
-				int x = Integer.parseInt(mowerLD[id][0]);
-				int y = Integer.parseInt(mowerLD[id][1]);
-				mowerLocations[id][0] = x;
-				mowerLocations[id][1] = y;
-				lawnMap[x][y] = Lawn.MOWER;//put mower into lawnMap	
-			} catch (Exception e) {
-	            e.printStackTrace();
-	            System.out.println();
-	        }			
+
+		//fill in the lawn location with mower 
+		for(int i=0; i<mowerNo;i++){ 
+			int mowerX = mowerPosition[i][0];
+			int mowerY = mowerPosition[i][1];
+			lawnMap[mowerX][mowerY] = i+5;			
 		}
 		craterNumber = craterNo;
 		//fill in the map with craters
 		for(int i=0; i<craterNo; i++){
 			int x = craterLocation[i][0];
 			int y = craterLocation[i][1];
-			lawnMap[x][y] = Lawn.CRATER;
+			lawnMap[x][y] = CRATER_CODE;
 		}
 		originalGrassNumber = lawnWidth * lawnHeight - craterNumber;
 		grassNumberCut = mowerNo; //grass will be cut when put a mower in that square		
 
-
+		energyLocation = mowerPosition;
 	}
 	
-	//added a function to act for a round
-	public void actOneRound(){
-		//check if no available mower
-		if(this.lawnmowerNumberLeft.equals(0)) return;
-					
-		for (int id=0;id<this.lawnmowers.length;id++){
-			Lawnmower currentMower = this.lawnmowers[id];
-			if (currentMower==null) continue;//if mower is deleted from lawn
-									
-			String[] action = currentMower.determineAction();
-			
-			//scan
-			if (action.length==1){
-				System.out.println(action[0]);
-				this.scanedByMower(id);				
-			}
-			
-			//move
-			if (action.length==3){
-				String moveDirection = action[0];
-				Integer distance = Integer.parseInt(action[1]);
-				String reorient = action[2];
-				System.out.println("move," + distance + "," + reorient);
-				Boolean result = this.moveMower(id, distance, moveDirection);
-				if (result) {
-					System.out.println("ok");
-				} else {
-					System.out.println("crash");
-					this.removeMower(id);					
+	//transfer scanned info to mower
+	public String[] scanedByMower(int mowerX, int mowerY){
+		
+		String[] info = new String[8];
+		//check from north and clockwise
+		String[] directions = {"north","northeast","east","southeast","south","southwest","west","northwest"};
+		for(int i=0;i<8;i++){
+			String direction = directions[i];
+			int xDir = Lawn.xDIR_MAP.get(direction);
+			int yDir = Lawn.yDIR_MAP.get(direction);
+			info[i] = this.checkSquare(mowerX+xDir, mowerY+yDir);
+		}	
+		return info;
+	}
+	
+	//a function to check the square element 
+	private String checkSquare(int x, int y){
+		int square = lawnMap[x][y];
+		if (x<0 || y<0 || x>=this.lawnWidth || y>=this.lawnHeight){
+			return type.get(FENCE_CODE);
+		} 
+		if (square>=5){
+			//check if it contains a charger
+			for(int i=0;i<energyLocation.length;i++){
+				if (energyLocation[i][0]==x && energyLocation[i][1]==y){
+					//mower + energy
+					return String.format("%s|%s", type.get(square), type.get(CHARGE_CODE)); // mower_1|energy
 				}
 				
 			}
 		}
+		return type.get(square);
+		
 	}
 	
 
