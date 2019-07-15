@@ -1,0 +1,62 @@
+/* Header */
+
+
+/* Content */
+body {
+    font-family: "Open Sans", arial, sans-serif;
+    color: #2d3c49;
+}
+
+.row {
+    margin-bottom: 20px;
+}
+
+.text-blue {
+    color: #7d97ad;
+}
+
+.map-table {
+    table-layout: fixed;
+}
+
+.grass {
+    background: #5c996b;
+    border: 1px solid black;
+    width: 100px;
+    text-align: center
+}
+
+.mower {
+    background: rgb(166, 187, 231);
+    border: 1px solid black;
+    width: 100px;
+    text-align: center
+}
+
+.crater {
+    background: grey;
+    border: 1px solid black;
+    width: 100px;
+    text-align: center
+}
+
+.empty {
+    background: white;
+    border: 1px solid black;
+    width: 100px;
+    text-align: center
+}
+
+.map-tr {
+    height: 100px;
+
+}
+
+.link {
+    cursor:pointer;
+}
+
+
+.tableFixHead          { overflow-y: auto; height: 300px; }
+.tableFixHead thead th { position: sticky; top: 0; }
+
