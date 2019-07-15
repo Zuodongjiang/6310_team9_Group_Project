@@ -7,8 +7,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
 
-import OsMowSis.Lawnmower;
-
 
 
 public class SimDriver {
@@ -139,37 +137,27 @@ public class SimDriver {
 		}
 	}
 	
+	/***
 	public void scan(int mowerID){
-		Mower mower = owerList[mowerID];
+		Mower mower = mowerList[mowerID];
 		int x = mowerPosition[mowerID][0];
 		int y = mowerPosition[mowerID][1];
-		String[] scanned_info = lawn.scanedByMower(x,y);
+		int[] scannedInfo = lawn.scanedByMower(x,y);
+		mower.updateScannedInfo(scannedInfo);//update mowerMap
+		
 		for(int i=0;i<8;i++){			
-			//mower location
-			int relativeX = this.currentRelativeLocation[0];
-			int relativeY = this.currentRelativeLocation[1];
-			//location of square to be checked
-			String direction = directions[i];
-			int xDir = this.xDIR_MAP.get(direction);
-			int yDir = this.yDIR_MAP.get(direction);
-			String square = this.checkSquare(x + xDir, y + yDir);
-			if (square.equals(Lawnmower.OUTSIDE)){
-				this.resizeMap(xDir, yDir);
-				//update mower's relative location
-				relativeX = mower.getMowerRelativeX();
-				relativeY = mower.getMowerRelativeY();
-			}
-			//update knowledge map
-			String element = scanned_info[i];
-			this.knowledgeMap[x+xDir][y+yDir] = element;
+			//print scannedInfo
+			int squareCode = scannedInfo[i];
+			String element = InfoMap.translateSquare(squareCode);
 			System.out.print(element);
 			if(i!=7) System.out.print(",");			
 		}
 		System.out.print("\n");
 		
 	}
+	***/
 	
-	/***
+	
 	public void scan(int mowerID) {
 		total_step++;
 		Mower mower = mowerList[mowerID];
@@ -230,7 +218,7 @@ public class SimDriver {
 		res.deleteCharAt(res.length() - 1);
 		System.out.println(res.toString());
 	}
-	***/
+	
 	
 	private boolean findMowerPosition(Mower mower) {
 		return mower.left && mower.right && mower.up && mower.down;
@@ -252,24 +240,6 @@ public class SimDriver {
 	}
 	
 	
-	public void mergeMap(int mowerID) {
-		Mower mower = mowerList[mowerID];
-		for(int id: mower.discovered.keySet()) {
-			Point pos = mower.discovered.get(id);
-			int dx = pos.x;
-			int dy = pos.y;
-			for(int i = 0; i < mapWidth; i++) {
-				for(int j = 0; j < mapHeight; j++) {
-					int x = i + dx;
-					int y = j + dy;
-					if(isValidPosition(x, y) && mowerList[id].mowerMap[x][y] == -1) {
-						mowerList[id].mowerMap[x][y] = mower.mowerMap[i][j];
-					}
-				}
-			}
-		}
-	}
-	
 	private boolean isValidPosition(int x, int y) {
 		return x >= 0 && x < mapWidth && y >=0 && y < mapHeight;
 	}
@@ -277,7 +247,7 @@ public class SimDriver {
 	public boolean validateMove(int mowerID, int dx, int dy) {
 		
 		total_step++;
-		mowerList[mowerID].CurEnergy--;
+		mowerList[mowerID].curEnergy--;
 		int x_pos = mowerPosition[mowerID][0];
 		int y_pos = mowerPosition[mowerID][1];
 		if (x_pos + dx < 0 || x_pos + dx >= lawnInfo.length || y_pos + dy < 0 || y_pos + dy >= lawnInfo[0].length) {
@@ -355,7 +325,7 @@ public class SimDriver {
 		// run out of energy
 		lawnInfo[x_pos][y_pos] = mowerID + 5;
 		mower.mowerMap[x_mower][y_mower] = mowerID + 5;
-		if (mowerList[mowerID].CurEnergy == 0) {
+		if (mowerList[mowerID].curEnergy == 0) {
 			mowerList[mowerID].enable = false;
 			activeMowerCount--;
 		}
@@ -378,7 +348,7 @@ public class SimDriver {
 	}
 
 	private void charge(int mowerID) {
-		mowerList[mowerID].CurEnergy = mowerList[mowerID].maxEnergy;
+		mowerList[mowerID].curEnergy = mowerList[mowerID].maxEnergy;
 	}
 
 	private void renderHorizontalBar(int size) {
