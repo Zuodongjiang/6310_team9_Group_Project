@@ -20,17 +20,17 @@ public class Mower {
 	//hashmap to define mower movement on coordinate for each direction
     private static HashMap<String, Integer> xDIR_MAP = new HashMap<>();
     private static HashMap<String, Integer> yDIR_MAP = new HashMap<>();
-	
+
 	// discovered: a list of mower that the mower can see, the Point records the relative position of these mowers
 	//public Map<Integer, Point> discovered;
-    
+
     //a set to record the id that this mower has discovered
-    private HashSet<Integer> discovered_mowers; 
+    private HashSet<Integer> discovered_mowers;
 
 	Integer mowerX, mowerY;
 	private String mowerDirection = "North";
 
-	
+
 	private String trackAction;
 	private Integer trackMoveDistance;
 	private String trackNewDirection;
@@ -42,15 +42,15 @@ public class Mower {
 	private final int CRATER_CODE = 2;
 	private final int FENCE_CODE = 3;
 	private final int CHARGE_CODE = 4;
-	
+
 	private boolean crashed = false;
 //	int dx = 10;
 //	int dy = 10;
 
-	
+
 	private int mapHeight = 2 * 10 + 1; //lawn height is 1~10 inclusive
 	private int mapWidth = 2 * 15 + 1; //lawn width is 1~15 inclusive
-	
+
 	boolean up = false;
 	boolean down = false;
 	boolean left = false;
@@ -64,17 +64,17 @@ public class Mower {
 
 	public Mower(String direction, int id, int energy_capacity, int numMowers) {
 		cc = new CommunicationChannel(numMowers);
-	
+
 
 		mowerDirection = direction;
 		mowerID = id;
 		maxEnergy = energy_capacity;
 		curEnergy = energy_capacity;
 		discovered_mowers = new HashSet<Integer>();
-				
+
 		mowerX = 10;
 		mowerY = 10;
-		
+
 		xDIR_MAP.put("north", 0);
 		xDIR_MAP.put("northeast", 1);
 		xDIR_MAP.put("east", 1);
@@ -84,7 +84,7 @@ public class Mower {
 		xDIR_MAP.put("west", -1);
 		xDIR_MAP.put("northwest", -1);
 
-		
+
 		yDIR_MAP.put("north", 1);
 		yDIR_MAP.put("northeast", 1);
 		yDIR_MAP.put("east", 0);
@@ -93,11 +93,11 @@ public class Mower {
 		yDIR_MAP.put("southwest", -1);
 		yDIR_MAP.put("west", 0);
 		yDIR_MAP.put("northwest", 1);
-				
+
 		//put self on the map: code = mowerID*10+100+CHARGE_CODE
 		int code = mowerID*10 + 100 + CHARGE_CODE;
 		InfoMap mowerMap = cc.getMap(mowerID);
-		mowerMap.updateMapSquare(mowerX, mowerY, code); 
+		mowerMap.updateMapSquare(mowerX, mowerY, code);
 	}
 
 	private boolean needScan() {
@@ -114,7 +114,7 @@ public class Mower {
 		return false;
 	}
 
-	
+
 	private void scan() {
 		sim.scan(mowerID);
 	}
@@ -143,7 +143,7 @@ public class Mower {
 
 	// move() : mover the mower, if the mower hit the crate or the fence, make
 	// crashed = true and return, otherwise, generate the motion.
-	
+
 	private void move() {
 		int dx = xDIR_MAP.get(mowerDirection);
 		int dy = yDIR_MAP.get(mowerDirection);
@@ -152,14 +152,14 @@ public class Mower {
 			// this is updated in the SimDriver, so it is not called here
 		}
 	}
-	
-	
+
+
 	private boolean isChargePad(int x, int y) {
 		InfoMap mowerMap = cc.getMap(mowerID);
 		return mowerMap.checkSquare(x, y) == CHARGE_CODE;
 	}
-	
-	
+
+
 	private void turning(String dir) {
 		trackAction = "move";
 		trackMoveDistance = 0;
@@ -334,12 +334,12 @@ public class Mower {
 		System.out.println("mowerX: " + mowerX + " mowerY: " + mowerY);
 	}
 
-	
-	
+
+
 	public int getMowerRelativeX(){
 		return mowerX;
 	}
-	
+
 	public int getMowerRelativeY(){
 		return mowerY;
 	}

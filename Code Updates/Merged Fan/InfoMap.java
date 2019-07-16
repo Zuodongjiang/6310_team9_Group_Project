@@ -1,4 +1,4 @@
-package Third;
+package team_9;
 
 
 import java.util.HashMap;
@@ -145,36 +145,25 @@ public class InfoMap {
   		return type.get(code);		
   	}
   	
-  	
-  	/***
-    private int[] resizeMap(int xDir, int yDir){
-		int newWidth = this.mapWidth + Math.abs(xDir);
-		int newHeight = this.mapHeight + Math.abs(yDir);
-		int[][] newMap = new int[newWidth][newHeight];
-		//fill the map with unknown
-		for (int i = 0; i < newWidth; i++) {
-			for (int j = 0; j < newHeight; j++) {
-				newMap[i][j] = -1;
-			}
-		}
-		
-		//transfer info to new map
-		int a = 0;
-		int b = 0;
-		if (xDir<0) a = 1;	
-		if (yDir<0) b = 1;			
-		for (int i=0; i<this.mapWidth; i++){
-			for (int j=0; j<this.mapHeight; j++){
-				newMap[i+a][j+b] = this.map[i][j];
-			}
-		}
-		this.mapWidth = newWidth;
-		this.mapHeight = newHeight;
-		this.map = newMap;	
-		int[] mowerNewDir = new int[2];
-		mowerNewDir[0] = a;
-		mowerNewDir[0] = b;
-		return mowerNewDir;//get mower's new location: X+=a, Y+=b 
-	}
-	***/
+  	public Integer getLawnWidth() {
+        return mapWidth;
+    }
+
+
+    public Integer getLawnHeight() {
+        return mapHeight;
+    }
+
+
+    public String[][] getLawnStatus() {
+    	String[][] lawnStatus = new String[mapWidth][mapHeight];
+    	for (int i=0;i<mapWidth;i++){
+    		for (int j=0;j<mapHeight;j++){
+    			int square_code = map[i][j];
+    			lawnStatus[i][j] = translateSquare(square_code);
+    		}
+    	}
+        return lawnStatus;
+    }
+
 }

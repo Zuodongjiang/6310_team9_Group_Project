@@ -1,31 +1,32 @@
-package Third;
-
-// The key logic of communication channel is to updated the information on the individual mower map and the shared mower map.
-// If the mower send a scan request to the simulator, the simulator will call the updateMowerMap() method here to update the map (including shared map).
-// if the mower send a move request to the simulator, the simulator will validate the move and update the mower position and map in communication channel.
-
-// Logic to update map 
-// case 1: mergePartialMowerMap(int mowerOneID, int mowerTwoID, int dx, int dy)
-// in this case, mowerOne discover mowerTwo through scanning. And at least one of then does not know its absolute position in lawn.
-// They can share their partial map.
-// After merge, we should check if all boundaries are found. If all are found, we should meger it into full mowerMap. Call the mergeFullMowerMap function.
-
-// case 2:  mergeFullMowerMap(int mowerIDOne)
-// in this case, mowerIDOne discovered its absolute position, it can merger with the maps of all other mowers that already find their positions.
-// Since all the mowers (with absolute position know) shares the same map, then we merge map of mower one with the shared map.
-// We need to find the relative position of the maps and , we need to update the position of the mower in the new map. 
-
-
-
-// These fields are new 
-// boolean[][] mowerBoundary = new boolean[mowerNumber][4], it represents whether the four boundaries of the map are found.
-// 0: left, 1: right, 2: up, 3: down;
-// for example,  mowerBoundary[1][0] = false: mower1 left boundary not found;
-//               mowerBoundary[1][1] = true: mower 1 right boundary is found;
-// boolean[] mowerFindAbsolutePosition, check if the mower find its absolute position in the map. 
+package team_9;
 
 import java.util.HashSet;
 import java.util.List;
+
+
+//The key logic of communication channel is to updated the information on the individual mower map and the shared mower map.
+//If the mower send a scan request to the simulator, the simulator will call the updateMowerMap() method here to update the map (including shared map).
+//if the mower send a move request to the simulator, the simulator will validate the move and update the mower position and map in communication channel.
+
+//Logic to update map 
+//case 1: mergePartialMowerMap(int mowerOneID, int mowerTwoID, int dx, int dy)
+//in this case, mowerOne discover mowerTwo through scanning. And at least one of then does not know its absolute position in lawn.
+//They can share their partial map.
+//After merge, we should check if all boundaries are found. If all are found, we should meger it into full mowerMap. Call the mergeFullMowerMap function.
+
+//case 2:  mergeFullMowerMap(int mowerIDOne)
+//in this case, mowerIDOne discovered its absolute position, it can merger with the maps of all other mowers that already find their positions.
+//Since all the mowers (with absolute position know) shares the same map, then we merge map of mower one with the shared map.
+//We need to find the relative position of the maps and , we need to update the position of the mower in the new map. 
+
+
+
+//These fields are new 
+//boolean[][] mowerBoundary = new boolean[mowerNumber][4], it represents whether the four boundaries of the map are found.
+//0: left, 1: right, 2: up, 3: down;
+//for example,  mowerBoundary[1][0] = false: mower1 left boundary not found;
+//            mowerBoundary[1][1] = true: mower 1 right boundary is found;
+//boolean[] mowerFindAbsolutePosition, check if the mower find its absolute position in the map. 
 
 public class CommunicationChannel {
 	public InfoMap[] mowerMaps;
