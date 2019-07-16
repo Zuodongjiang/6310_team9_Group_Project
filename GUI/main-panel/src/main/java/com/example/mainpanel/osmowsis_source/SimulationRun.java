@@ -9,8 +9,8 @@ public class SimulationRun {
 	// dummy simulationRun for API test
 
 	// TODO: get lawn map
-	public LawnMap getLawnMap() {
-		LawnMap lawnMap = new LawnMap(6, 6);
+	public InfoMap getLawnMap() {
+		InfoMap lawnMap = new InfoMap(10, 10);
 		return lawnMap;
 	}
 
@@ -38,17 +38,23 @@ public class SimulationRun {
 		return mowerList;
 	}
 
-	// TODO: move next
-	public LawnMap moveNext() {
-		LawnMap lawnMap = new LawnMap(6, 6);
-		String[][] lawnStatus = lawnMap.getLawnStatus();
-		lawnStatus[1][3] = "mower";
-		lawnStatus[1][2] = "empty";
-		return lawnMap;
+	// TODO: move next mower, return the mower ID
+	public int moveNext() {
+		return 1;
+		// if already the end
+		// return -1
+	}
+
+
+	// TODO: stop run
+	public void stopRun() {
+
 	}
 
 	// TODO: move fast-forward
 	public void act() {
 
 	}
+
+
 }
