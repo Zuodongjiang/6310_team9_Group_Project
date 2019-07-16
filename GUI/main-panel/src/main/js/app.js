@@ -11,51 +11,77 @@ class App extends React.Component {
 
 	constructor(props) {
 		super(props);
-        this.state = {setting: { mowerStates: [], report: {}, map: { lawnStatus: [[]] }}};
+        this.state = { value: '', hidePathForm: '', hideSimulation: 'hidden', setting: { mowerStates: [], report: {}, map: { lawnStatus: [[]] }}};
         this.toggleButtonState = this.toggleButtonState.bind(this);
-	}
+        this.handleChange = this.handleChange.bind(this);
+        this.handleSubmit = this.handleSubmit.bind(this);
+    }
 
-	componentDidMount() {
-		client({method: 'POST', path: '/simulation'}).done(response => {
-			this.setState({setting: response.entity});
+    // get the value of an input field
+    handleChange(event) {
+        this.setState({ value: event.target.value });
+    }
+    // send POST request to server, get result from server
+    handleSubmit(event) {
+        event.preventDefault();
+        client({method: 'POST', headers: { 'Content-Type': 'application/json' }, path: '/simulation', entity: { filePath: this.state.value } }).done(response => {
+			this.setState({setting: response.entity, hidePathForm: 'hidden', hideSimulation: ''});
 		});
-	}
+    }
 
+    // click next button and send PATCH request to server, get result from server
     toggleButtonState() {
         client({method: 'PATCH', path: '/next'}).done(response => {
             this.setState({setting: response.entity});
             console.log(this.state)
         });
     }
-
+    // render html
 	render() {
 		return (
-            <div class="container">
-                <header class="row">
-                    <div class="col-md-12 text-uppercase">
-                    <h3 class="text-blue">Lawnmowers Simulation</h3>
-                    </div>
-                </header>
-
-                <div class="row">
-                    <section class="col-md-2">
-                    <button onClick={this.toggleButtonState}> Next Step </button>
-                    </section>
-
-                    <section class="col-md-2">
-                    <button type="button" onClick="alert('Hello world!')">Stop & Restart</button>
-                    </section>
-
-                    <section class="col-md-2">
-                    <button type="button" onClick="alert('Hello world!')">Fast-Forward</button>
-                    </section>
+            <div>
+                <div class={`container ${this.state.hidePathForm}`}>
+                    <form onSubmit={this.handleSubmit}>
+                        <label>
+                        File Path:
+                        <input type="text" value={this.state.value} onChange={this.handleChange} />
+                        </label>
+                        <input type="submit" value="Submit" />
+                    </form>
                 </div>
 
-                <MowerList mowers={this.state.setting.mowerStates}/>
+                <div class={`container ${this.state.hideSimulation}`}>
 
-                <Report report={this.state.setting.report}/>
-                <Map map={this.state.setting.map.lawnStatus} />
+                    <div class="row">
+                        <div class="col-md-6 text-uppercase">
+                            <h3 class="text-blue">Lawnmowers Simulation</h3>
+                        </div>
+                        <section class="col-md-2">
+                            <button onClick={this.toggleButtonState}> Next Step </button>
+                        </section>
+
+                        <section class="col-md-2">
+                            <button type="button" onClick="alert('Hello world!')">Stop & Restart</button>
+                        </section>
+
+                        <section class="col-md-2">
+                            <button type="button" onClick="alert('Hello world!')">Fast-Forward</button>
+                        </section>
+                    </div>
+                    <div class="row">
+                        <section class="col-md-5">
+                            <Report report={this.state.setting.report}/>
+                            <MowerList mowers={this.state.setting.mowerStates}/>
+                        </section>
+                        <section class="col-md-7">
+                            <Map map={this.state.setting.map.lawnStatus} />
+                        </section>
+
+                    </div>
+
+                </div>
             </div>
+
 		)
     }
 }
@@ -63,16 +89,23 @@ class App extends React.Component {
 
 class Map extends React.Component{
 	render() {
-		const rows = this.props.map.map(row =>
-			<tr class="map-tr">
-                {row.map(cell => {
-                    return <td class = {cell}>{cell}</td>
-                })}
-            </tr>
+        var rowLength = this.props.map.length;
+        const rows = this.props.map.map((row, index) =>
+            <div class = "parent">
+                <h4 class="float-left">{rowLength - 1 - index}</h4>
+                <tr class="map-tr float-right">
+                    {row.map((cell) => {
+
+                            return <td class = {cell}></td>
+
+                    })}
+                </tr>
+            </div>
+
 		);
 		return (
             <div>
-                <h4 class="text-blue">Map</h4>
+                <h4 class="text-blue">Lawn Map</h4>
                 <div >
 
 
@@ -99,9 +132,9 @@ class MowerList extends React.Component{
             <div>
                 <h4 class="text-blue">Mower States</h4>
                 <div class="row">
-                    <div class="col-md-6 table-responsive">
+                    <div class="col-md-12 table-responsive table-striped">
                         <div class="tableFixHead">
-                            <table class="table">
+                            <table class="table table-bordered">
                                 <thead class="thead-light">
                                     <tr>
                                         <th scope="col">Mower ID</th>
@@ -144,8 +177,8 @@ class Report extends React.Component{
             <div>
                 <h4 class="text-blue">Summery Info</h4>
                 <div class="row">
-                    <div class="col-md-6 table-responsive">
-                        <table class="table">
+                    <div class="col-md-12 table-responsive">
+                        <table class="table table-bordered">
                             <thead class="thead-light">
                                 <tr>
                                     <th scope="col">Initial Grass</th>

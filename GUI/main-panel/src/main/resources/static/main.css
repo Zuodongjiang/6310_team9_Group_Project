@@ -8,7 +8,19 @@ body {
 }
 
 .row {
+    margin-top: 30px;
     margin-bottom: 20px;
+}
+
+.parent {
+    display: flex;
+    flex-direction:row;
+}
+.float-left {
+    float:left;
+}
+.float-right {
+    float:right;
 }
 
 .text-blue {
@@ -20,35 +32,61 @@ body {
 }
 
 .grass {
-    background: #5c996b;
+    background-image: url("grass.png");
+    background-size: cover;
     border: 1px solid black;
-    width: 100px;
+    width: 60px;
+    height: 60px;
     text-align: center
 }
 
 .mower {
-    background: rgb(166, 187, 231);
+    background-image: url("mower.png");
+    background-size: cover;
     border: 1px solid black;
-    width: 100px;
+    width: 60px;
+    height: 60px;
     text-align: center
 }
 
 .crater {
-    background: grey;
+    background-image: url("crater.png");
+    background-size: cover;
     border: 1px solid black;
-    width: 100px;
+    width: 60px;
+    height: 60px;
+    text-align: center
+}
+
+.mower_charge {
+    background-image: url("mower.png"), url("charge.png");
+    background-size: cover;
+    border: 1px solid black;
+    width: 60px;
+    height: 60px;
+    text-align: center
+}
+
+.charge {
+    background-image: url("charge.png");
+    background-position: right;
+    background-repeat: no-repeat;
+    border: 1px solid black;
+    width: 60px;
+    height: 60px;
     text-align: center
 }
 
 .empty {
     background: white;
     border: 1px solid black;
-    width: 100px;
+    width: 60px;
+    height: 60px;
     text-align: center
 }
 
 .map-tr {
-    height: 100px;
+    height: 60px;
 
 }
 
@@ -56,7 +94,10 @@ body {
     cursor:pointer;
 }
 
+.hidden {
+    display: none;
+}
 
-.tableFixHead          { overflow-y: auto; height: 300px; }
+.tableFixHead          { overflow-y: auto; height: 500px; }
 .tableFixHead thead th { position: sticky; top: 0; }
 

@@ -30318,6 +30318,9 @@ function (_React$Component) {
 
     _this = _possibleConstructorReturn(this, _getPrototypeOf(App).call(this, props));
     _this.state = {
+      value: '',
+      hidePathForm: '',
+      hideSimulation: 'hidden',
       setting: {
         mowerStates: [],
         report: {},
@@ -30327,23 +30330,44 @@ function (_React$Component) {
       }
     };
     _this.toggleButtonState = _this.toggleButtonState.bind(_assertThisInitialized(_this));
+    _this.handleChange = _this.handleChange.bind(_assertThisInitialized(_this));
+    _this.handleSubmit = _this.handleSubmit.bind(_assertThisInitialized(_this));
     return _this;
-  }
+  } // get the value of an input field
+
 
   _createClass(App, [{
-    key: "componentDidMount",
-    value: function componentDidMount() {
+    key: "handleChange",
+    value: function handleChange(event) {
+      this.setState({
+        value: event.target.value
+      });
+    } // send POST request to server, get result from server
+
+  }, {
+    key: "handleSubmit",
+    value: function handleSubmit(event) {
       var _this2 = this;
 
+      event.preventDefault();
       client({
         method: 'POST',
-        path: '/simulation'
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        path: '/simulation',
+        entity: {
+          filePath: this.state.value
+        }
       }).done(function (response) {
         _this2.setState({
-          setting: response.entity
+          setting: response.entity,
+          hidePathForm: 'hidden',
+          hideSimulation: ''
         });
       });
-    }
+    } // click next button and send PATCH request to server, get result from server
+
   }, {
     key: "toggleButtonState",
     value: function toggleButtonState() {
@@ -30359,21 +30383,31 @@ function (_React$Component) {
 
         console.log(_this3.state);
       });
-    }
+    } // render html
+
   }, {
     key: "render",
     value: function render() {
-      return React.createElement("div", {
-        "class": "container"
-      }, React.createElement("header", {
+      return React.createElement("div", null, React.createElement("div", {
+        "class": "container ".concat(this.state.hidePathForm)
+      }, React.createElement("form", {
+        onSubmit: this.handleSubmit
+      }, React.createElement("label", null, "File Path:", React.createElement("input", {
+        type: "text",
+        value: this.state.value,
+        onChange: this.handleChange
+      })), React.createElement("input", {
+        type: "submit",
+        value: "Submit"
+      }))), React.createElement("div", {
+        "class": "container ".concat(this.state.hideSimulation)
+      }, React.createElement("div", {
         "class": "row"
       }, React.createElement("div", {
-        "class": "col-md-12 text-uppercase"
+        "class": "col-md-6 text-uppercase"
       }, React.createElement("h3", {
         "class": "text-blue"
-      }, "Lawnmowers Simulation"))), React.createElement("div", {
-        "class": "row"
-      }, React.createElement("section", {
+      }, "Lawnmowers Simulation")), React.createElement("section", {
         "class": "col-md-2"
       }, React.createElement("button", {
         onClick: this.toggleButtonState
@@ -30387,13 +30421,19 @@ function (_React$Component) {
       }, React.createElement("button", {
         type: "button",
         onClick: "alert('Hello world!')"
-      }, "Fast-Forward"))), React.createElement(MowerList, {
-        mowers: this.state.setting.mowerStates
-      }), React.createElement(Report, {
+      }, "Fast-Forward"))), React.createElement("div", {
+        "class": "row"
+      }, React.createElement("section", {
+        "class": "col-md-5"
+      }, React.createElement(Report, {
         report: this.state.setting.report
-      }), React.createElement(Map, {
+      }), React.createElement(MowerList, {
+        mowers: this.state.setting.mowerStates
+      })), React.createElement("section", {
+        "class": "col-md-7"
+      }, React.createElement(Map, {
         map: this.state.setting.map.lawnStatus
-      }));
+      })))));
     }
   }]);
 
@@ -30415,18 +30455,23 @@ function (_React$Component2) {
   _createClass(Map, [{
     key: "render",
     value: function render() {
-      var rows = this.props.map.map(function (row) {
-        return React.createElement("tr", {
-          "class": "map-tr"
+      var rowLength = this.props.map.length;
+      var rows = this.props.map.map(function (row, index) {
+        return React.createElement("div", {
+          "class": "parent"
+        }, React.createElement("h4", {
+          "class": "float-left"
+        }, rowLength - 1 - index), React.createElement("tr", {
+          "class": "map-tr float-right"
         }, row.map(function (cell) {
           return React.createElement("td", {
             "class": cell
-          }, cell);
-        }));
+          });
+        })));
       });
       return React.createElement("div", null, React.createElement("h4", {
         "class": "text-blue"
-      }, "Map"), React.createElement("div", null, React.createElement("table", {
+      }, "Lawn Map"), React.createElement("div", null, React.createElement("table", {
         "class": "map-table"
       }, React.createElement("tbody", null, rows))));
     }
@@ -30460,11 +30505,11 @@ function (_React$Component3) {
       }, "Mower States"), React.createElement("div", {
         "class": "row"
       }, React.createElement("div", {
-        "class": "col-md-6 table-responsive"
+        "class": "col-md-12 table-responsive table-striped"
       }, React.createElement("div", {
         "class": "tableFixHead"
       }, React.createElement("table", {
-        "class": "table"
+        "class": "table table-bordered"
       }, React.createElement("thead", {
         "class": "thead-light"
       }, React.createElement("tr", null, React.createElement("th", {
@@ -30525,9 +30570,9 @@ function (_React$Component5) {
       }, "Summery Info"), React.createElement("div", {
         "class": "row"
       }, React.createElement("div", {
-        "class": "col-md-6 table-responsive"
+        "class": "col-md-12 table-responsive"
       }, React.createElement("table", {
-        "class": "table"
+        "class": "table table-bordered"
       }, React.createElement("thead", {
         "class": "thead-light"
       }, React.createElement("tr", null, React.createElement("th", {
