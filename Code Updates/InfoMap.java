@@ -1,13 +1,13 @@
 package team_9;
 
-import java.util.HashMap;
 
+import java.util.HashMap;
 
 public class InfoMap { 
 	
 	private int mapHeight; //lawn height is 1~10 inclusive
 	private int mapWidth;  //lawn width is 1~15 inclusive
-	private int[][] map;
+	public int[][] map;
 	
 	//hashmap to define mower movement on coordinate for each direction
 	private static HashMap<String, Integer> xDIR_MAP = new HashMap<>();
@@ -145,6 +145,26 @@ public class InfoMap {
   		return type.get(code);		
   	}
   	
+  	public Integer getLawnWidth() {
+        return mapWidth;
+    }
+
+
+    public Integer getLawnHeight() {
+        return mapHeight;
+    }
+
+
+    public String[][] getLawnStatus() {
+    	String[][] lawnStatus = new String[mapWidth][mapHeight];
+    	for (int i=0;i<mapWidth;i++){
+    		for (int j=0;j<mapHeight;j++){
+    			int square_code = map[i][j];
+    			lawnStatus[i][j] = translateSquare(square_code);
+    		}
+    	}
+        return lawnStatus;
+    }
   	
   	/***
     private int[] resizeMap(int xDir, int yDir){
