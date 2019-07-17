@@ -10,7 +10,11 @@ public class SimulationRun {
 
 	// TODO: get lawn map
 	public InfoMap getLawnMap() {
-		InfoMap lawnMap = new InfoMap(10, 10);
+		// The lawnMap includes these three atributes below:
+		// 	Integer lawnWidth;
+		//  Integer lawnHeight;
+		//  String[][] lawnStatus;
+		InfoMap lawnMap = new InfoMap(6, 8);
 		return lawnMap;
 	}
 
@@ -30,7 +34,7 @@ public class SimulationRun {
 		for (int i = 0; i < 10; i ++) {
 			MowerStates mowerStates = new MowerStates();
 			mowerStates.setMower_id(i + 1);
-			mowerStates.setMowerStatus("N/A");
+			mowerStates.setMowerStatus("N/A"); // set "N/A" for initilized map
 			mowerStates.setEnergyLevel(30);
 			mowerStates.setStallTurn(0);
 			mowerList.add(mowerStates);
