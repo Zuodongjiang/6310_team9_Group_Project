@@ -3,7 +3,7 @@ package team_9;
 
 public class Lawn {
 
-	private InfoMap lawnMap;
+	public InfoMap lawnMap;
 
 
 	public Lawn(int lawnWidth, int lawnHeight, int mowerNo, int[][] mowerPosition, int craterNo, int[][] craterLocation){

@@ -1,13 +1,12 @@
 package team_9;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.time.chrono.IsoChronology;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Scanner;
-
-
 
 public class SimDriver {
 	private static final int DEFAULT_WIDTH = 100;
@@ -17,7 +16,15 @@ public class SimDriver {
 	private static Mower[] mowerList;
 	private int[][] mowerPosition;
 	private Lawn lawn;
-	
+	private int lawnHeight;
+	private int lawnWidth;
+	private int[][] lawnInfo;
+	private CommunicationChannel cc;
+
+	private List<Integer> mowerKnowPosition = new ArrayList<>();
+	// private Lawn lawn;
+
+
 	
 	
 	private HashMap<String, Integer> xDIR_MAP;
@@ -33,6 +40,7 @@ public class SimDriver {
 	private final int FENCE_CODE = 3;
 	private final int CHARGE_CODE = 4;
 	
+	private int nextMower = 0;
 
 	private int total_cut = 0;
 	private int total_grass = 0;
@@ -74,9 +82,9 @@ public class SimDriver {
 
 			// read in the lawn information
 			tokens = takeCommand.nextLine().split(DELIMITER);
-			Integer lawnWidth = Integer.parseInt(tokens[0]); //line 1
+			lawnWidth = Integer.parseInt(tokens[0]); //line 1
 			tokens = takeCommand.nextLine().split(DELIMITER);
-			Integer lawnHeight = Integer.parseInt(tokens[0]); //line 2
+			lawnHeight = Integer.parseInt(tokens[0]); //line 2
 			
 
 			// Initilize mower list
@@ -85,7 +93,9 @@ public class SimDriver {
 			activeMowerCount = numMowers;
 			mowerCount = numMowers;
 			mowerList = new Mower[numMowers];
-			
+			cc = new CommunicationChannel(mowerCount);
+			Mower.cc = cc;
+			Mower.sim = this;
 			//collision delay
 			tokens = takeCommand.nextLine().split(DELIMITER);
 			collision_delay = Integer.parseInt(tokens[0]);  //line 4
@@ -123,12 +133,14 @@ public class SimDriver {
             }
 
 			tokens = takeCommand.nextLine().split(DELIMITER);
-			numTurn = Integer.parseInt(tokens[0]); //line 9
-			
+			numTurn = 10 * Integer.parseInt(tokens[0]); //line 9
+			total_grass = lawnWidth * lawnHeight - numCraters - numMowers;
 			// create Lawn instance
             this.lawn = new Lawn(lawnWidth, lawnHeight, numMowers, mowerPosition, numCraters, craterLocation);
-    
+            cc.mowerList = mowerList;
 			takeCommand.close();
+			lawnInfo = this.lawn.lawnMap.map;
+			
 			// renderLawn();
 			// scan();
 		} catch (Exception e) {
@@ -137,26 +149,26 @@ public class SimDriver {
 		}
 	}
 	
-	/***
-	public void scan(int mowerID){
-		Mower mower = mowerList[mowerID];
-		int x = mowerPosition[mowerID][0];
-		int y = mowerPosition[mowerID][1];
-		int[] scannedInfo = lawn.scanedByMower(x,y);
-		mower.updateScannedInfo(scannedInfo);//update mowerMap
-		
-		for(int i=0;i<8;i++){			
-			//print scannedInfo
-			int squareCode = scannedInfo[i];
-			String element = InfoMap.translateSquare(squareCode);
-			System.out.print(element);
-			if(i!=7) System.out.print(",");			
-		}
-		System.out.print("\n");
-		
-	}
-	***/
 	
+	// poll next avaiable mower
+	private void moveNext() {
+		while(!mowerList[nextMower].enable) {
+			nextMower = (nextMower + 1) % mowerCount;
+		}
+		mowerList[nextMower].pollMowerForAction();
+	}
+	
+	private MowerStates getMowerState(int mowerID) {
+	
+	    String mowerStatus = mowerList[mowerID].enable ? "enabled" : "disabled";
+	    int energyLevel = mowerList[mowerID].curEnergy ;
+	    int stallTurn = mowerList[mowerID].stallTurn;
+		return new MowerStates(mowerID, mowerStatus, energyLevel, stallTurn);
+	}
+	
+	public int[][] getLawnMap() {
+		return lawnInfo;
+	}
 	
 	public void scan(int mowerID) {
 		total_step++;
@@ -165,87 +177,32 @@ public class SimDriver {
 		int y_pos = mowerPosition[mowerID][1];
 		int dx = mower.mowerX - x_pos;
 		int dy = mower.mowerY - y_pos;
-		StringBuilder res = new StringBuilder();
+		List<Integer> res = new ArrayList<>();
 		int[][] neis = new int[][] { { x_pos, y_pos + 1 }, { x_pos + 1, y_pos + 1 }, { x_pos + 1, y_pos },
 				{ x_pos + 1, y_pos - 1 }, { x_pos, y_pos - 1 }, { x_pos - 1, y_pos - 1 }, { x_pos - 1, y_pos },
 				{ x_pos - 1, y_pos + 1 } };
+
 		for (int[] nei : neis) {
 			if (nei[0] < 0 || nei[0] >= lawnWidth || nei[1] < 0 || nei[1] >= lawnHeight) {
-				res.append("fence");
-				if(!mower.findLawn) {
-					if ((!mower.left && nei[0] < 0) || (!mower.right && nei[0] >= lawnWidth)) {
-						for (int k = 0; k < mower.mapHeight; k++) {
-							mower.mowerMap[nei[0] + dx][k] = 3;
-						}
-						if (nei[0] < 0) {
-							mower.left = true;
-						} else {
-							mower.right = true;
-						}
-					}
-					if ((!mower.down && nei[1] < 0) || (!mower.up && nei[1] >= lawnHeight)) {
-						for (int k = 0; k < mower.mapWidth; k++) {
-							mower.mowerMap[k][nei[1] + dy] = 3;
-						}
-						if (nei[1] < 0) {
-							mower.down = true;
-						} else {
-							mower.up = true;
-						}
-					}
-					if(findMowerPosition(mower)) {
-						mower.findLawn = true;
-						findOtherMower(mowerID);
-					}
-				}
+				res.add(3);
 			} else {
-				int t = lawnInfo[nei[0]][nei[1]];
-				res.append(type.get(t));
-				// update mowermap when they see each other
-				if(t >= 5 && !mower.discovered.containsKey(t)) {
-					mower.discovered.put(t, new Point(nei[0], nei[1]));
-					mowerList[t].discovered.put(mowerID, new Point(x_pos, y_pos));
-					mergeMap(t);
-				}
-				mower.mowerMap[nei[0] + dx][nei[1] + dy] = t;
+				res.add(lawnInfo[nei[0]][nei[1]]);
 			}
-			res.append(',');
 		}
-		if(mower.discovered != null) {
-			mergeMap(mowerID);
-		}
-		
-		res.deleteCharAt(res.length() - 1);
-		System.out.println(res.toString());
+		System.out.println("scan: " + res.toString());
+		cc.updateMowerMap(mowerID, res);
 	}
-	
-	
-	private boolean findMowerPosition(Mower mower) {
-		return mower.left && mower.right && mower.up && mower.down;
-	}
-	
-	private void findOtherMower(int mowerID) {
-		Mower mower = mowerList[mowerID];
 
-		for(int otherID: mowerKnowPosition) {
-			if(!mower.discovered.containsKey(otherID)) {
-				mower.discovered.put(otherID, new Point(0,0));
-				mergeMap(mowerID);
-				
-				mowerList[otherID].discovered.put(mowerID, new Point(0,0));
-				mergeMap(otherID);
-			}
-		}
+	private void updateMowerMap() {
 		
 	}
-	
 	
 	private boolean isValidPosition(int x, int y) {
-		return x >= 0 && x < mapWidth && y >=0 && y < mapHeight;
+		return x >= 0 && x < lawnWidth && y >= 0 && y < lawnHeight;
 	}
 
 	public boolean validateMove(int mowerID, int dx, int dy) {
-		
+		System.out.println("move");
 		total_step++;
 		mowerList[mowerID].curEnergy--;
 		int x_pos = mowerPosition[mowerID][0];
@@ -264,14 +221,12 @@ public class SimDriver {
 			case CRATER_CODE:
 				removeMower(mowerID);
 				return false;
-			case MOWER_CODE:
-				return false;
 			case CHARGE_CODE:
 				charge(mowerID);
 				updatePosition(mowerID, dx, dy);
 				return true;
 			default:
-				return false;
+				return true;
 			}
 		}
 	}
@@ -279,64 +234,62 @@ public class SimDriver {
 	private void removeMower(int mowerID) {
 		activeMowerCount--;
 		mowerList[mowerID].enable = false;
-		int x_pos = mowerPosition[mowerID][0];
-		int y_pos = mowerPosition[mowerID][1];
-		if (isChargePad(x_pos, y_pos)) {
-			lawnInfo[x_pos][y_pos] = CHARGE_CODE;
-		} else {
-			lawnInfo[x_pos][y_pos] = EMPTY_CODE;
-		}
 	}
 
-	
-	// update Position: update the lawnInfo and mowerMap, need to add update the other mowerMap;
+	// update Position: update the lawnInfo and mowerMap, need to add update the
+	// other mowerMap;
 	private void updatePosition(int mowerID, int dx, int dy) {
 		// leave the previous position
 		int x_pos = mowerPosition[mowerID][0];
 		int y_pos = mowerPosition[mowerID][1];
+
+		int[][] mowerMap = cc.mowerMaps[mowerID].map;
 		
-		Mower mower = mowerList[mowerID];
-		int x_mower = mower.mowerX;
-		int y_mower = mower.mowerY;
+		
+		
+		int x_mower = cc.mowerRelativeLocation[mowerID][0];
+		int y_mower = cc.mowerRelativeLocation[mowerID][1];
 		if (isChargePad(x_pos, y_pos)) {
 			lawnInfo[x_pos][y_pos] = CHARGE_CODE;
-			mower.mowerMap[x_mower][y_mower] = CHARGE_CODE;
+			mowerMap[x_mower][y_mower] = CHARGE_CODE;
 		} else {
 			lawnInfo[x_pos][y_pos] = EMPTY_CODE;
-			mower.mowerMap[x_mower][y_mower] = EMPTY_CODE;
+			mowerMap[x_mower][y_mower] = EMPTY_CODE;
 		}
 		
+		lawnInfo[x_pos][y_pos] = EMPTY_CODE;
+		mowerMap[x_mower][y_mower] = EMPTY_CODE;
+
 		// go to the new position
-		x_pos +=  dx;
-		y_pos +=  dy;
+		x_pos += dx;
+		y_pos += dy;
 		x_mower += dx;
 		y_mower += dy;
 
 		mowerPosition[mowerID][0] = x_pos;
 		mowerPosition[mowerID][1] = y_pos;
-		mower.mowerX = x_mower;
-		mower.mowerY = y_mower;
-		
+		cc.mowerRelativeLocation[mowerID][0] = x_mower;
+		cc.mowerRelativeLocation[mowerID][1] = y_mower;
+
 		// cut grass
 		if (lawnInfo[x_pos][y_pos] == GRASS_CODE) {
 			total_cut++;
 		}
-		
+
 		// run out of energy
 		lawnInfo[x_pos][y_pos] = mowerID + 5;
-		mower.mowerMap[x_mower][y_mower] = mowerID + 5;
+		mowerMap[x_mower][y_mower] = mowerID + 5;
 		if (mowerList[mowerID].curEnergy == 0) {
 			mowerList[mowerID].enable = false;
 			activeMowerCount--;
 		}
-		
-		if(mower.discovered != null) {
-			mergeMap(mowerID);
-		}
+
 	}
 
-	private boolean isComplete() {
+	private boolean stopRun() {
 		if (activeMowerCount == 0 || total_cut == total_grass || total_step == numTurn) {
+			System.out.println("mowerCount" + activeMowerCount );
+			System.out.println("mowerCount" + numTurn );
 			return true;
 		}
 		return false;
@@ -392,11 +345,11 @@ public class SimDriver {
 					break;
 				case CRATER_CODE:
 					System.out.print("c");
-					break;	
+					break;
 				case CHARGE_CODE:
 					System.out.print("p");
 				default:
-					System.out.print("m");
+					System.out.print(lawnInfo[i][j]);
 					break;
 				}
 			}
@@ -415,26 +368,51 @@ public class SimDriver {
 		// System.out.println("dir: " + mowerDirection);
 		System.out.println("");
 	}
-
+	
+	public void testLoad(String testFileName) {
+		String DELIMITER = ",";
+		Scanner sc;
+		try {
+			sc = new Scanner(new File(testFileName));
+			while(sc.hasNext()) {
+				System.out.println(sc.nextLine());
+			}
+		} catch (FileNotFoundException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	}
 	public static void main(String[] args) {
 		SimDriver test = new SimDriver();
-		String arg = "scenario6.csv";
-		Mower.sim = test;
-		test.uploadStartingFile(arg);
+		String arg = "cs6310_a7_test8.txt";
+//		test.testLoad(arg);
+		
+		
+		test.uploadStartingFile(arg);		
 		test.renderLawn();
 		for (int i = 0; i < 100; i++) {
-			for (int j = 0; j < mowerCount; j++) {
+			for (int j = 0; j < test.mowerCount; j++) {
+//				System.out.println(i + " " + mowerList[j].enable);
 				if (mowerList[j].enable) {
-					System.out.println(i);
+					
+					System.out.println("testrun: " + mowerList[j].mowerID);
+					
+					if(i == 2 && j == 1) {
+						Mower.renderLawn(test.cc.mowerMaps[1].map);
+					}
 					mowerList[j].pollMowerForAction();
 				}
-				if (test.isComplete()) {
-					break;
-				}
+
 			}
-			
-			if(test.isComplete()) break; 
+			System.out.println(i);
+			if(test.stopRun()) break; 
 		}
+		
+//		
+		
+//		
 		test.renderLawn();
+//		test.cc.check();
 	}
 }

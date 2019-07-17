@@ -5,13 +5,19 @@ public class MowerStates {
     private String mowerStatus;
     private int energyLevel;
     private int stallTurn;
-
+    
+    MowerStates (int mower_id, String mowerStatus, int energyLevel, int stallTurn) {
+    	this.mower_id = mower_id;
+    	this.mowerStatus = mowerStatus;
+    	this.energyLevel = energyLevel;
+    	this.stallTurn = stallTurn;
+    }
     public int getMower_id() {
         return mower_id;
     }
 
     public void setMower_id(int mower_id) {
-        this.mower_id = mower_id;
+        this.mower_id = mower_id;  
     }
 
     public String getMowerStatus() {
