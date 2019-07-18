@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/GUI/main-panel/.mvn/.mvn.iml" filepath="$PROJECT_DIR$/GUI/main-panel/.mvn/.mvn.iml" />
+      <module fileurl="file://$PROJECT_DIR$/6310_team9_Group_Project.iml" filepath="$PROJECT_DIR$/6310_team9_Group_Project.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Mingxing_Zhang/Mingxing_Zhang.iml" filepath="$PROJECT_DIR$/Mingxing_Zhang/Mingxing_Zhang.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Yuan_Zhong/Yuan_Zhong.iml" filepath="$PROJECT_DIR$/Yuan_Zhong/Yuan_Zhong.iml" />
+      <module fileurl="file://$PROJECT_DIR$/jun_yan/jun_yan.iml" filepath="$PROJECT_DIR$/jun_yan/jun_yan.iml" />
+      <module fileurl="file://$PROJECT_DIR$/GUI/main-panel/src/main/main.iml" filepath="$PROJECT_DIR$/GUI/main-panel/src/main/main.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Team67-master/Code/src/main/main1.iml" filepath="$PROJECT_DIR$/Team67-master/Code/src/main/main1.iml" />
+      <module fileurl="file://$PROJECT_DIR$/Fan Xu/osmowsis_source/osmowsis_source.iml" filepath="$PROJECT_DIR$/Fan Xu/osmowsis_source/osmowsis_source.iml" />
+      <module fileurl="file://$PROJECT_DIR$/zuodong_jiang/zuodong_jiang.iml" filepath="$PROJECT_DIR$/zuodong_jiang/zuodong_jiang.iml" />
+    </modules>
+  </component>
+</project>
