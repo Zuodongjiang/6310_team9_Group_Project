@@ -6,8 +6,11 @@
 //Stop Button:
 stopRun()未起作用
 
-//Fast-foward Button
+//Fast-forward Button
 act() 未起作用
+
+//map
+未显示charge的位置，检查getLawnStatus()函数，返回的string 未包含charge 和 mower_id-charge
 
 //Mower States表格
 mower ID为0，出现错误，检查getMowerState()函数
