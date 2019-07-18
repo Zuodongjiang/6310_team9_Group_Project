@@ -149,11 +149,16 @@ public class SimulationRun {
 	
 	
 	// poll next avaiable mower
-	public void moveNext() {
+	public int moveNext() {
 		while(!mowerList[nextMower].enable) {
 			nextMower = (nextMower + 1) % mowerCount;
 		}
-		mowerList[nextMower].pollMowerForAction();
+		if (!checkStop()){
+			mowerList[nextMower].pollMowerForAction();
+			return nextMower;
+		} else {
+			return -1;
+		}
 	}
 	
 	/*** need update
@@ -165,12 +170,19 @@ public class SimulationRun {
 	}
 	***/
 	
-	public MowerStates getMowerState(int mowerID) {
+	public MowerStates[] getMowerState() {
+		MowerStates[] allMowerStates = new MowerStates[mowerCount];
+		for (int i=0;i<mowerCount;i++){
+	    String mowerStatus = mowerList[i].enable ? "enabled" : "disabled";
+	    int energyLevel = mowerList[i].curEnergy ;
+	    int stallTurn = mowerList[i].stallTurn;
+	    allMowerStates[i] = new MowerStates(i, mowerStatus, energyLevel, stallTurn);
+		}
+		return allMowerStates;
+	}
 	
-	    String mowerStatus = mowerList[mowerID].enable ? "enabled" : "disabled";
-	    int energyLevel = mowerList[mowerID].curEnergy ;
-	    int stallTurn = mowerList[mowerID].stallTurn;
-		return new MowerStates(mowerID, mowerStatus, energyLevel, stallTurn);
+	public InfoMap getLawnMap(){
+		return this.lawnMap;
 	}
 	
 	public Report generateReport(){
@@ -291,8 +303,8 @@ public class SimulationRun {
 	
 	public void act(){
 		while(!checkStop() || !pressStop){
-			nextMower = (nextMower + 1) % mowerCount;
 			mowerList[nextMower].pollMowerForAction();
+			nextMower = (nextMower + 1) % mowerCount;
 		}		
 	}
 	 
