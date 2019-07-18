@@ -13,7 +13,7 @@ public class SimultaionRun {
 
 	private static Mower[] mowerList;
 	private int[][] mowerPosition;
-	private Lawn lawn;
+	private InfoMap lawnMap;
 	private int lawnHeight;
 	private int lawnWidth;
 	private int[][] lawnInfo;
@@ -110,10 +110,12 @@ public class SimultaionRun {
 			numTurn = Integer.parseInt(tokens[0]); // line 9
 			total_grass = lawnWidth * lawnHeight - numCraters - numMowers;
 			// create Lawn instance
-			this.lawn = new Lawn(lawnWidth, lawnHeight, numMowers, mowerPosition, numCraters, craterLocation);
+//			this.lawn = new Lawn(lawnWidth, lawnHeight, numMowers, mowerPosition, numCraters, craterLocation);
+			lawnMap = new InfoMap(lawnWidth, lawnHeight, numMowers, mowerPosition, numCraters, craterLocation, true);
+
 			CommunicationChannel.mowerList = mowerList;
 			takeCommand.close();
-			lawnInfo = this.lawn.lawnMap.map;
+			lawnInfo = lawnMap.map;
 
 			// renderLawn();
 			// scan();
@@ -123,7 +125,7 @@ public class SimultaionRun {
 		}
 	}
 
-	private MowerStates[] getMowerState(int mowerID) {
+	public MowerStates[] getMowerState() {
 		MowerStates[] allMowerStates = new MowerStates[mowerCount];
 		for (int i = 0; i < mowerCount; i++) {
 			String mowerStatus = mowerList[i].enable ? "enabled" : "disabled";
@@ -135,7 +137,7 @@ public class SimultaionRun {
 	}
 
 	public InfoMap getLawnMap() {
-		return lawn.lawnMap;
+		return lawnMap;
 	}
 
 	public Report generateReport() {
