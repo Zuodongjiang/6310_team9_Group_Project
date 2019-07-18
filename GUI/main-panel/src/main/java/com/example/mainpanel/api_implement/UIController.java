@@ -1,4 +1,4 @@
-package com.example.mainpanel;
+package com.example.mainpanel.api_implement;
 
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.stereotype.Controller;

@@ -1,103 +1,102 @@
-package com.example.mainpanel.osmowsis_source;
+package com.example.mainpanel.back_end;
 
 import java.util.HashMap;
 
 public class InfoMap {
 
-	private int mapHeight; //lawn height is 1~10 inclusive
-	private int mapWidth;  //lawn width is 1~15 inclusive
-	private int[][] map;
+	private int mapHeight; // lawn height is 1~10 inclusive
+	private int mapWidth; // lawn width is 1~15 inclusive
+	public int[][] map;
 
-	//hashmap to define mower movement on coordinate for each direction
+	// hashmap to define mower movement on coordinate for each direction
 	private static HashMap<String, Integer> xDIR_MAP = new HashMap<>();
 	private static HashMap<String, Integer> yDIR_MAP = new HashMap<>();
 	private static HashMap<Integer, String> type = new HashMap<>();
 
-    //elements code
+	// elements code
 	private static final int UNKNOWN_CODE = -1;
 	private static final int EMPTY_CODE = 0;
 	private static final int GRASS_CODE = 1;
 	private static final int CRATER_CODE = 2;
 	private static final int FENCE_CODE = 3;
 	private static final int CHARGE_CODE = 4;
-  	//mower start from 5(mowerID=0)
-	//if a square contains both charge and mower, code = mowerID*10+100+CHARGE_CODE
+	// mower start from 5(mowerID=0)
+	// if a square contains both charge and mower, code = mowerID*10+100+CHARGE_CODE
 
-    public InfoMap(int width, int height, int chargeNo, int[][] chargePosition, int craterNo, int[][] craterLocation, boolean fullMap){
+	public InfoMap(int width, int height, int chargeNo, int[][] chargePosition, int craterNo, int[][] craterLocation,
+			boolean fullMap) {
 
-    	//set hashmap for mower movement
-        xDIR_MAP.put("north", 0);
-        xDIR_MAP.put("northeast", 1);
-        xDIR_MAP.put("east", 1);
-        xDIR_MAP.put("southeast", 1);
-        xDIR_MAP.put("south", 0);
-        xDIR_MAP.put("southwest", -1);
-        xDIR_MAP.put("west", -1);
-        xDIR_MAP.put("northwest", -1);
+		// set hashmap for mower movement
+		xDIR_MAP.put("north", 0);
+		xDIR_MAP.put("northeast", 1);
+		xDIR_MAP.put("east", 1);
+		xDIR_MAP.put("southeast", 1);
+		xDIR_MAP.put("south", 0);
+		xDIR_MAP.put("southwest", -1);
+		xDIR_MAP.put("west", -1);
+		xDIR_MAP.put("northwest", -1);
 
-
-        yDIR_MAP.put("north", 1);
-        yDIR_MAP.put("northeast", 1);
-        yDIR_MAP.put("east", 0);
-        yDIR_MAP.put("southeast", -1);
-        yDIR_MAP.put("south", -1);
-        yDIR_MAP.put("southwest", -1);
-        yDIR_MAP.put("west", 0);
-        yDIR_MAP.put("northwest", 1);
-
+		yDIR_MAP.put("north", 1);
+		yDIR_MAP.put("northeast", 1);
+		yDIR_MAP.put("east", 0);
+		yDIR_MAP.put("southeast", -1);
+		yDIR_MAP.put("south", -1);
+		yDIR_MAP.put("southwest", -1);
+		yDIR_MAP.put("west", 0);
+		yDIR_MAP.put("northwest", 1);
 
 		type.put(EMPTY_CODE, "empty");
 		type.put(GRASS_CODE, "grass");
 		type.put(CRATER_CODE, "crater");
 		type.put(FENCE_CODE, "fence");
 		type.put(CHARGE_CODE, "charge");
-		for(int i=5;i<chargeNo+5;i++){//mowerCode start from 5 (id=0)
-			String mowerName = String.format("mower_%d", i-4);
-			type.put(i, mowerName);//mowerName start from 1
+		for (int i = 5; i < chargeNo + 5; i++) {// mowerCode start from 5 (id=0)
+			String mowerName = String.format("mower_%d", i - 4);
+			type.put(i, mowerName);// mowerName start from 1
 		}
 
 		this.mapWidth = width;
 		this.mapHeight = height;
 		this.map = new int[width][height];
-		//check if it is full map or partial map
-		if (fullMap){ //full map -> fill grass
+		// check if it is full map or partial map
+		if (fullMap) { // full map -> fill grass
 			for (int i = 0; i < width; i++) {
-	            for (int j = 0; j < height; j++) {
-	                map[i][j] = GRASS_CODE;
-	            }
-	        }
-		} else { //partial map -> fill unknown
+				for (int j = 0; j < height; j++) {
+					map[i][j] = GRASS_CODE;
+				}
+			}
+		} else { // partial map -> fill unknown
 			for (int i = 0; i < width; i++) {
-	            for (int j = 0; j < height; j++) {
-	                map[i][j] = UNKNOWN_CODE;
-	            }
-	        }
+				for (int j = 0; j < height; j++) {
+					map[i][j] = UNKNOWN_CODE;
+				}
+			}
 		}
 
-		//fill in the lawn location with CHARGE & mowers
-		if (chargeNo>0 && fullMap){
-			for(int id=0; id<chargeNo;id++){
+		// fill in the lawn location with CHARGE & mowers
+		if (chargeNo > 0 && fullMap) {
+			for (int id = 0; id < chargeNo; id++) {
 				int mowerX = chargePosition[id][0];
 				int mowerY = chargePosition[id][1];
-				//if a square contains both charge and mower, code = mowerID*10+100+CHARGE_CODE
-//				map[mowerX][mowerY] = id*10 + 100 + CHARGE_CODE;
+				// if a square contains both charge and mower, code = mowerID*10+100+CHARGE_CODE
+				// map[mowerX][mowerY] = id*10 + 100 + CHARGE_CODE;
 				map[mowerX][mowerY] = id + 5;
 			}
 		}
 
-		//fill in the map with craters
-		if (craterNo>0){
-			for(int i=0; i<craterNo; i++){
+		// fill in the map with craters
+		if (craterNo > 0) {
+			for (int i = 0; i < craterNo; i++) {
 				int x = craterLocation[i][0];
 				int y = craterLocation[i][1];
 				map[x][y] = CRATER_CODE;
 			}
 		}
 
-    }
+	}
 
-    //return scanned info (integer)
-  	public int[] scan(int mowerX, int mowerY){
+	// return scanned info (integer)
+	public int[] scan(int mowerX, int mowerY){
   		int[] info = new int[8];
   		//check from north and clockwise
   		String[] directions = {"north","northeast","east","southeast","south","southwest","west","northwest"};
@@ -177,5 +176,6 @@ public class InfoMap {
         }
         return rotated;
     }
+
 
 }

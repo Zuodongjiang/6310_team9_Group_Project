@@ -1,4 +1,4 @@
-package com.example.mainpanel;
+package com.example.mainpanel.api_implement;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

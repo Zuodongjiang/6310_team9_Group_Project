@@ -1,8 +1,6 @@
-package com.example.mainpanel;
+package com.example.mainpanel.api_implement;
 
-import java.util.List;
-
-import com.example.mainpanel.osmowsis_source.*;
+import com.example.mainpanel.back_end.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -21,21 +19,25 @@ public class DemoApplication {
 	// https://github.com/spring-guides/tut-react-and-spring-data-rest/tree/master/basic
 	// https://spring.io/guides/tutorials/react-and-spring-data-rest/
 
-	private SimulationRun monitorSim;
+	private SimultaionRun monitorSim;
+	private InfoMap lawnMap;
+	private Report report;
+	private MowerStates[] mowerStates;
+
 	// open browser: 0.read file 1.initialize map 2.report 3.Mowers States
 	@PostMapping(value = "/simulation")
 	public String startApplication(@RequestBody FilePath filePath) throws JsonProcessingException {
 		// 0. read file
-		monitorSim = new SimulationRun(filePath);
+		monitorSim = new SimultaionRun(filePath);
 
 		// 1.initialize map
-		InfoMap lawnMap = monitorSim.getLawnMap();
+		lawnMap = monitorSim.getLawnMap();
 
 		// 2.report
-		Report report = monitorSim.generateReport();
+		report = monitorSim.generateReport();
 
 		// 3.mowers states
-		MowerStates[]mowerStates = monitorSim.getMowerState();
+		mowerStates = monitorSim.getMowerState();
 
 		// object --> JSON
 		// Spring uses Jackson ObjectMapper class to do Json Serialization and Deserialization.
@@ -53,13 +55,13 @@ public class DemoApplication {
 		monitorSim.stopRun();
 
 		// 2. map
-		InfoMap lawnMap = monitorSim.getLawnMap();
+		lawnMap = monitorSim.getLawnMap();
 
 		// 3.report
-		Report report = monitorSim.generateReport();
+		report = monitorSim.generateReport();
 
 		// 4.mowers states
-		MowerStates[]mowerStates = monitorSim.getMowerState();
+		mowerStates = monitorSim.getMowerState();
 
 		// object --> JSON
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -76,13 +78,13 @@ public class DemoApplication {
 		int mowerID = monitorSim.moveNext();
 
 		// 2. map
-		InfoMap lawnMap = monitorSim.getLawnMap();
+		lawnMap = monitorSim.getLawnMap();
 
 		// 3.report
-		Report report = monitorSim.generateReport();
+		report = monitorSim.generateReport();
 
 		// 4.mowers states
-		MowerStates[]mowerStates = monitorSim.getMowerState();
+		mowerStates = monitorSim.getMowerState();
 
 		// object --> JSON
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -91,7 +93,7 @@ public class DemoApplication {
 		String stateAsString = objectMapper.writeValueAsString(mowerStates);
 		return "{\"map\":" + mapAsString + ", \"report\":" + reportAsString + ", \"mowerStates\":" + stateAsString + ", \"mowerID\":" + mowerID + "}";
 	}
-
+/*
 	// fast-forward: 1. move mower fast-forward 2. update map 3. report 4.Mowers States
 	@PatchMapping(value = "/fast-forward")
 	public String fastForwardRun() throws JsonProcessingException {
@@ -99,13 +101,13 @@ public class DemoApplication {
 		monitorSim.act();
 
 		// 2. update map
-		InfoMap lawnMap = monitorSim.getLawnMap();
+		lawnMap = monitorSim.getLawnMap();
 
 		// 3. report
-		Report report = monitorSim.generateReport();
+		report = monitorSim.generateReport();
 
 		// 4.Mowers States
-		MowerStates[]mowerStates = monitorSim.getMowerState();
+		mowerStates = monitorSim.getMowerState();
 
 		// object --> JSON
 		ObjectMapper objectMapper = new ObjectMapper();
@@ -113,5 +115,5 @@ public class DemoApplication {
 		String reportAsString = objectMapper.writeValueAsString(report);
 		String stateAsString = objectMapper.writeValueAsString(mowerStates);
 		return "{\"map\":" + mapAsString + ", \"report\":" + reportAsString + ", \"mowerStates\":" + stateAsString + "}";
-	}
+	} */
 }

@@ -1,4 +1,4 @@
-package com.example.mainpanel.osmowsis_source;
+package com.example.mainpanel.back_end;
 
 public class Report {
     private int initalGrassCount;

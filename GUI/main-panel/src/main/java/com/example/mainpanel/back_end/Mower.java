@@ -1,4 +1,4 @@
-package team_9;
+package com.example.mainpanel.back_end;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -10,11 +10,9 @@ import java.util.Map;
 import java.util.Queue;
 
 // Functions of Mower: scan, turning, path planning and moving.
-// Before determine each mower action, the mower will get the updated mowerMap and mower position from communication channel. 
+// Before determine each mower action, the mower will get the updated mowerMap and mower position from communication channel.
 // It will then determine the next mower action based on the mower map.
-// After determine the action, it will send its next action to the simulationRun. The simulationRun will validate the motion and call communicationChannel to updated all information.  
-
-
+// After determine the action, it will send its next action to the simulationRun. The simulationRun will validate the motion and call communicationChannel to updated all information.
 
 public class Mower {
 	class Point {
@@ -27,7 +25,7 @@ public class Mower {
 		}
 	}
 	public int mowerID = 0;
-	public static SimDriver sim;
+	public static SimultaionRun sim;
 	static CommunicationChannel cc;
 
 	// discovered: a list of mower that the mower can see, the Point records the
@@ -35,24 +33,25 @@ public class Mower {
 	public Map<Integer, Point> discovered;
 	Integer mowerX, mowerY;
 	private String mowerDirection = "North";
-	private static HashMap<String, Integer> xDIR_MAP;
-	private static HashMap<String, Integer> yDIR_MAP;
+	private static HashMap<String, Integer> xDIR_MAP = new HashMap<>();
+	private static HashMap<String, Integer> yDIR_MAP = new HashMap<>();
 	//a set to record the id that this mower has discovered
-    private HashSet<Integer> discovered_mowers;
-    
+
+
 	private String trackAction;
 	private Integer trackMoveDistance;
 	private String trackNewDirection;
 	private String trackMoveCheck;
 	private String trackScanResults;
-	
-	private final int CHARGE_CODE = 4;
-	
-	int code = mowerID*10 + 100 + CHARGE_CODE;
 
+	private final int CHARGE_CODE = 4;
+
+//	int code = mowerID*10 + 100 + CHARGE_CODE;
+
+	int code = mowerID + 5;
 	private boolean crashed = false;
-	int mapWidth = 2 * 10 + 1;
-	int mapHeight = 2 * 15 + 1;
+	int mapWidth = 2 * 17 + 1;
+	int mapHeight = 2 * 17 + 1;
 
 	int[][] mowerMap;
 
@@ -61,19 +60,17 @@ public class Mower {
 	boolean enable = true;
 	int curEnergy = 0;
 	int maxEnergy = 0;
+	public int stallTurn = 0;
 
 	public Mower(String direction, int id, int energy_capacity, int numMowers) {
-		cc = new CommunicationChannel(numMowers);
-
 
 		mowerDirection = direction;
 		mowerID = id;
 		maxEnergy = energy_capacity;
 		curEnergy = energy_capacity;
-		discovered_mowers = new HashSet<Integer>();
 
-		mowerX = 10;
-		mowerY = 10;
+		mowerX = 17;
+		mowerY = 17;
 
 		xDIR_MAP.put("north", 0);
 		xDIR_MAP.put("northeast", 1);
@@ -95,7 +92,8 @@ public class Mower {
 		yDIR_MAP.put("northwest", 1);
 
 		//put self on the map: code = mowerID*10+100+CHARGE_CODE
-		int code = mowerID*10 + 100 + CHARGE_CODE;
+//		int code = mowerID*10 + 100 + CHARGE_CODE;
+		int code = mowerID + 5;
 		InfoMap mowerMap = cc.getMap(mowerID);
 		mowerMap.updateMapSquare(mowerX, mowerY, code);
 	}
@@ -166,6 +164,7 @@ public class Mower {
 		int[][] neis = new int[][] { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 }, { 0, -1 }, { -1, -1 }, { -1, 0 },
 				{ -1, 1 } };
 		// Use Best First Search to find
+//		renderLawn(cc.mowerMaps[mowerID].map);
 		Queue<Point> queue = new ArrayDeque<>();
 		queue.offer(new Point(mowerX, mowerY));
 		int step = 1;
@@ -181,6 +180,7 @@ public class Mower {
 				for (int[] nei : neis) {
 					int neiX = cur.x + nei[0];
 					int neiY = cur.y + nei[1];
+
 					if (visited[neiX][neiY] == 0) {
 						if (mowerMap[neiX][neiY] == -1 || mowerMap[neiX][neiY] == 1) {
 							visited[neiX][neiY] = step;
@@ -227,6 +227,9 @@ public class Mower {
 		return res;
 	}
 
+	private boolean isValid(int x, int y) {
+		return x >=0 && x < 31 && y >= 0 && y < 31;
+	}
 	// (1) if there is unknown area around the mower, scan first;
 	// (2) if mower can cut any grass without turning, move along this direction
 	// (3) if the mower can cut grass after turning, change the direction of the
@@ -240,6 +243,11 @@ public class Mower {
 		// Since the mowerMaps is updating, at the beginning of the action, get the
 		// latest map, and the position of the mower;
 		// the map and the mower position is updated in the commchannel.
+
+		while(stallTurn > 0) {
+			stallTurn--;
+			return;
+		}
 		mowerMap = cc.mowerMaps[mowerID].map;
 		mowerX = cc.mowerRelativeLocation[mowerID][0];
 		mowerY = cc.mowerRelativeLocation[mowerID][1];
@@ -296,6 +304,72 @@ public class Mower {
 
 	public void position() {
 		System.out.println("mowerX: " + mowerX + " mowerY: " + mowerY);
+	}
+
+	private static void renderHorizontalBar(int size) {
+		System.out.print(" ");
+		for (int k = 0; k < size; k++) {
+			System.out.print("-");
+		}
+		System.out.println("");
+	}
+
+	public static void renderLawn(int[][] lawnInfo) {
+		int i, j;
+		int lawnWidth = 35;
+		int lawnHeight = 35;
+		int charWidth = 2 * lawnWidth + 2;
+
+		// display the rows of the lawn from top to bottom
+		for (j = lawnHeight - 1; j >= 0; j--) {
+			renderHorizontalBar(charWidth);
+
+			// display the Y-direction identifier
+			System.out.print(j);
+
+			// display the contents of each square on this row
+			for (i = 0; i < lawnWidth; i++) {
+				System.out.print("|");
+				// the mower overrides all other contents
+				switch (lawnInfo[i][j]) {
+				case 0:
+					System.out.print("  ");
+					break;
+				case 1:
+					System.out.print(" g");
+					break;
+				case 2:
+					System.out.print(" c");
+					break;
+				case 4:
+					System.out.print(" p");
+				case 3:
+					System.out.print(" f");
+					break;
+				case -1:
+					System.out.print("-1");
+					break;
+				default:
+					String s = String.valueOf(lawnInfo[i][j]);
+//					if(s.length() == 1) s = s + "e";
+					System.out.print(s);
+					break;
+				}
+			}
+			System.out.println("|");
+		}
+		renderHorizontalBar(charWidth);
+
+		// display the column X-direction identifiers
+		System.out.print(" ");
+		for (i = 0; i < lawnWidth; i++) {
+			System.out.print(" " + i);
+		}
+		System.out.println("");
+
+		// display the mower's direction
+		// System.out.println("dir: " + mowerDirection);
+		System.out.println("");
 	}
 
 }
