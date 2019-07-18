@@ -30326,10 +30326,13 @@ function (_React$Component) {
         report: {},
         map: {
           lawnStatus: [[]]
-        }
+        },
+        mowerID: ''
       }
     };
     _this.toggleButtonState = _this.toggleButtonState.bind(_assertThisInitialized(_this));
+    _this.toggleButtonStateStop = _this.toggleButtonStateStop.bind(_assertThisInitialized(_this));
+    _this.toggleButtonStateRun = _this.toggleButtonStateRun.bind(_assertThisInitialized(_this));
     _this.handleChange = _this.handleChange.bind(_assertThisInitialized(_this));
     _this.handleSubmit = _this.handleSubmit.bind(_assertThisInitialized(_this));
     return _this;
@@ -30380,9 +30383,41 @@ function (_React$Component) {
         _this3.setState({
           setting: response.entity
         });
-
-        console.log(_this3.state);
       });
+
+      if (this.state.setting.mowerID == -1) {
+        alert('Simulation Stoped, Reset Now');
+      }
+    } // click stop button and send DELET request to server, get result from server
+
+  }, {
+    key: "toggleButtonStateStop",
+    value: function toggleButtonStateStop() {
+      var _this4 = this;
+
+      client({
+        method: 'DELETE',
+        path: '/stop'
+      }).done(function (response) {
+        _this4.setState({
+          setting: response.entity
+        });
+      }); //alert('Simulation Stoped, Reset Now');
+    } // click fast-forward button and send PATCH request to server, get result from server
+
+  }, {
+    key: "toggleButtonStateRun",
+    value: function toggleButtonStateRun() {
+      var _this5 = this;
+
+      client({
+        method: 'PATCH',
+        path: '/fast-forward'
+      }).done(function (response) {
+        _this5.setState({
+          setting: response.entity
+        });
+      }); //alert('Simulation Stoped, Reset Now');
     } // render html
 
   }, {
@@ -30390,50 +30425,59 @@ function (_React$Component) {
     value: function render() {
       return React.createElement("div", null, React.createElement("div", {
         "class": "container ".concat(this.state.hidePathForm)
+      }, React.createElement("div", {
+        "class": "row"
+      }, React.createElement("div", {
+        "class": "col-md-12 text-uppercase"
+      }, React.createElement("h2", {
+        "class": "text-blue"
+      }, "Lawnmowers Simulation"))), React.createElement("div", {
+        "class": "row"
+      }, React.createElement("div", {
+        "class": "col-md-12"
       }, React.createElement("form", {
         onSubmit: this.handleSubmit
       }, React.createElement("label", null, "File Path:", React.createElement("input", {
         type: "text",
         value: this.state.value,
         onChange: this.handleChange
-      })), React.createElement("input", {
+      })), React.createElement("div", {
+        "class": "row col-md-12"
+      }, React.createElement("input", {
         type: "submit",
         value: "Submit"
-      }))), React.createElement("div", {
-        "class": "container ".concat(this.state.hideSimulation)
+      })))))), React.createElement("div", {
+        "class": "container ".concat(this.state.hideSimulation, " bg-color")
       }, React.createElement("div", {
-        "class": "row"
+        "class": "strip"
       }, React.createElement("div", {
-        "class": "col-md-6 text-uppercase"
-      }, React.createElement("h3", {
-        "class": "text-blue"
-      }, "Lawnmowers Simulation")), React.createElement("section", {
-        "class": "col-md-2"
-      }, React.createElement("button", {
+        "class": "row d-flex justify-content-center"
+      }, React.createElement("h2", {
+        "class": "text-blue text-uppercase"
+      }, "Lawnmowers Simulation")), React.createElement("div", {
+        "class": "row jd-flex justify-content-between"
+      }, React.createElement("div", null, React.createElement("button", {
         onClick: this.toggleButtonState
-      }, " Next Step ")), React.createElement("section", {
-        "class": "col-md-2"
-      }, React.createElement("button", {
-        type: "button",
-        onClick: "alert('Hello world!')"
-      }, "Stop & Restart")), React.createElement("section", {
-        "class": "col-md-2"
-      }, React.createElement("button", {
-        type: "button",
-        onClick: "alert('Hello world!')"
-      }, "Fast-Forward"))), React.createElement("div", {
-        "class": "row"
+      }, " Next Step ")), React.createElement("div", null, React.createElement("button", {
+        onClick: this.toggleButtonStateStop
+      }, "Stop & Restart")), React.createElement("div", null, React.createElement("button", {
+        onClick: this.toggleButtonStateRun
+      }, "Fast-Forward")))), React.createElement("div", {
+        "class": "box"
+      }, React.createElement("div", {
+        "class": "d-flex justify-content-center"
       }, React.createElement("section", {
-        "class": "col-md-5"
+        "class": "float-left"
       }, React.createElement(Report, {
         report: this.state.setting.report
       }), React.createElement(MowerList, {
-        mowers: this.state.setting.mowerStates
+        mowers: this.state.setting.mowerStates,
+        mowerID: this.state.setting.mowerID
       })), React.createElement("section", {
-        "class": "col-md-7"
+        "class": "float-right"
       }, React.createElement(Map, {
         map: this.state.setting.map.lawnStatus
-      })))));
+      }))))));
     }
   }]);
 
@@ -30455,25 +30499,39 @@ function (_React$Component2) {
   _createClass(Map, [{
     key: "render",
     value: function render() {
-      var rowLength = this.props.map.length;
+      var rowLength = this.props.map.length; // TODO row number
+
+      var colLength = this.props.map[0].length;
+      var arr = Array(colLength).fill(0);
+      var rowX = arr.map(function (cell, index) {
+        return React.createElement("td", {
+          "class": "tr-col"
+        }, React.createElement("h5", null, index));
+      });
       var rows = this.props.map.map(function (row, index) {
-        return React.createElement("div", {
+        return React.createElement("div", null, React.createElement("div", {
           "class": "parent"
-        }, React.createElement("h4", {
-          "class": "float-left"
-        }, rowLength - 1 - index), React.createElement("tr", {
+        }, React.createElement("td", {
+          "class": "tr-col-left"
+        }, React.createElement("h5", null, rowLength - 1 - index)), React.createElement("tr", {
           "class": "map-tr float-right"
         }, row.map(function (cell) {
           return React.createElement("td", {
-            "class": cell
-          });
-        })));
+            "class": cell.replace(/[^a-z]/gi, '')
+          }, cell.replace(/[^0-9]/gi, ''));
+        }))));
       });
       return React.createElement("div", null, React.createElement("h4", {
         "class": "text-blue"
       }, "Lawn Map"), React.createElement("div", null, React.createElement("table", {
         "class": "map-table"
-      }, React.createElement("tbody", null, rows))));
+      }, React.createElement("tbody", null, rows, React.createElement("div", {
+        "class": "parent"
+      }, React.createElement("tr", {
+        "class": "map-tr float-right"
+      }, React.createElement("td", {
+        "class": "tr-col-left"
+      }), rowX))))));
     }
   }]);
 
@@ -30500,12 +30558,13 @@ function (_React$Component3) {
           mower: mower
         });
       });
+      var mowerID = this.props.mowerID;
       return React.createElement("div", null, React.createElement("h4", {
         "class": "text-blue"
       }, "Mower States"), React.createElement("div", {
         "class": "row"
       }, React.createElement("div", {
-        "class": "col-md-12 table-responsive table-striped"
+        "class": "col-md-12 table-responsive"
       }, React.createElement("div", {
         "class": "tableFixHead"
       }, React.createElement("table", {
@@ -30542,6 +30601,10 @@ function (_React$Component4) {
   _createClass(Mower, [{
     key: "render",
     value: function render() {
+      // TODO: highlight row
+      var mowerID = this.props.mowerID; //var mower_id = this.props.mower.mower_id;
+      // var isColored = Boolean(mowerID == mower_id);
+
       return React.createElement("tr", null, React.createElement("td", null, this.props.mower.mower_id), React.createElement("td", null, this.props.mower.mowerStatus), React.createElement("td", null, this.props.mower.energyLevel), React.createElement("td", null, this.props.mower.stallTurn));
     }
   }]);

@@ -1,11 +1,17 @@
 package com.example.mainpanel.osmowsis_source;
 
-
 public class Report {
     private int initalGrassCount;
     private int cutGrassCount;
     private int grassRemaining;
     private int turnCount;
+
+    public Report(int initalGrassCount, int cutGrassCount, int grassRemaining, int turnCount){
+    	this.initalGrassCount = initalGrassCount;
+    	this.cutGrassCount = cutGrassCount;
+    	this.grassRemaining = grassRemaining;
+    	this.turnCount = turnCount;
+    }
 
     public int getGrassRemaining() {
         return grassRemaining;
@@ -39,4 +45,5 @@ public class Report {
     public void setTurnCount(int turnCount) {
 		this.turnCount = turnCount;
 	}
+
 }

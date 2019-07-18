@@ -1,0 +1,16 @@
+
+//Next Button:
+1.当前点击next button成功call了moveNext(), 但是出现第一次点击 mower move，第二次点击mower只scan的情况
+2.点击next后始终是第一个mower在move，而不是每个mower轮流move
+
+//Stop Button:
+stopRun()未起作用
+
+//Fast-foward Button
+act() 未起作用
+
+//Mower States表格
+mower ID为0，出现错误，检查getMowerState()函数
+
+//Summery Info表格
+检查Initial Grass，Grass Cut和Grass Left计算值

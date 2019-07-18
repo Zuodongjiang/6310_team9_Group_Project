@@ -1,4 +1,4 @@
-package com.example.mainpanel;
+package com.example.mainpanel.osmowsis_source;
 
 public class FilePath {
     private String filePath;

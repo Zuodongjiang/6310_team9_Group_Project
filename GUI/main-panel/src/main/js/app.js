@@ -11,8 +11,10 @@ class App extends React.Component {
 
 	constructor(props) {
 		super(props);
-        this.state = { value: '', hidePathForm: '', hideSimulation: 'hidden', setting: { mowerStates: [], report: {}, map: { lawnStatus: [[]] }}};
+        this.state = { value: '', hidePathForm: '', hideSimulation: 'hidden', setting: { mowerStates: [], report: {}, map: { lawnStatus: [[]] }, mowerID: ''}};
         this.toggleButtonState = this.toggleButtonState.bind(this);
+        this.toggleButtonStateStop = this.toggleButtonStateStop.bind(this);
+        this.toggleButtonStateRun = this.toggleButtonStateRun.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -29,56 +31,89 @@ class App extends React.Component {
 		});
     }
 
+
     // click next button and send PATCH request to server, get result from server
     toggleButtonState() {
         client({method: 'PATCH', path: '/next'}).done(response => {
             this.setState({setting: response.entity});
-            console.log(this.state)
         });
+        if (this.state.setting.mowerID == -1) {
+            alert('Simulation Stoped, Reset Now');
+        }
     }
+
+    // click stop button and send DELET request to server, get result from server
+    toggleButtonStateStop() {
+        client({method: 'DELETE', path: '/stop'}).done(response => {
+            this.setState({setting: response.entity});
+        });
+        //alert('Simulation Stoped, Reset Now');
+    }
+
+    // click fast-forward button and send PATCH request to server, get result from server
+    toggleButtonStateRun() {
+        client({method: 'PATCH', path: '/fast-forward'}).done(response => {
+            this.setState({setting: response.entity});
+        });
+        //alert('Simulation Stoped, Reset Now');
+    }
+
+
     // render html
 	render() {
 		return (
             <div>
                 <div class={`container ${this.state.hidePathForm}`}>
-                    <form onSubmit={this.handleSubmit}>
-                        <label>
-                        File Path:
-                        <input type="text" value={this.state.value} onChange={this.handleChange} />
-                        </label>
-                        <input type="submit" value="Submit" />
-                    </form>
+                        <div class="row">
+                            <div class="col-md-12 text-uppercase">
+                                <h2 class="text-blue">Lawnmowers Simulation</h2>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12">
+                                <form onSubmit={this.handleSubmit}>
+                                    <label>
+                                        File Path:
+                                        <input type="text" value={this.state.value} onChange={this.handleChange} />
+                                    </label>
+                                    <div class="row col-md-12">
+                                        <input type="submit" value="Submit" />
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
                 </div>
 
-                <div class={`container ${this.state.hideSimulation}`}>
-
-                    <div class="row">
-                        <div class="col-md-6 text-uppercase">
-                            <h3 class="text-blue">Lawnmowers Simulation</h3>
+                <div class={`container ${this.state.hideSimulation} bg-color`}>
+                    <div class="strip">
+                        <div class="row d-flex justify-content-center">
+                            <h2 class="text-blue text-uppercase">Lawnmowers Simulation</h2>
                         </div>
-                        <section class="col-md-2">
-                            <button onClick={this.toggleButtonState}> Next Step </button>
-                        </section>
-
-                        <section class="col-md-2">
-                            <button type="button" onClick="alert('Hello world!')">Stop & Restart</button>
-                        </section>
-
-                        <section class="col-md-2">
-                            <button type="button" onClick="alert('Hello world!')">Fast-Forward</button>
-                        </section>
+                        <div class="row jd-flex justify-content-between">
+                            <div>
+                                <button onClick={this.toggleButtonState}> Next Step </button>
+                            </div>
+                            <div>
+                                <button onClick={this.toggleButtonStateStop}>Stop & Restart</button>
+                            </div>
+                            <div>
+                                <button onClick={this.toggleButtonStateRun}>Fast-Forward</button>
+                            </div>
+                        </div>
                     </div>
-                    <div class="row">
-                        <section class="col-md-5">
-                            <Report report={this.state.setting.report}/>
-                            <MowerList mowers={this.state.setting.mowerStates}/>
-                        </section>
-                        <section class="col-md-7">
-                            <Map map={this.state.setting.map.lawnStatus} />
-                        </section>
-
+                    <div class="box">
+                        <div class="d-flex justify-content-center">
+                            <section class="float-left">
+                                <Report report={this.state.setting.report}/>
+                                <MowerList mowers={this.state.setting.mowerStates}
+                                        mowerID={this.state.setting.mowerID}
+                                />
+                            </section>
+                            <section class="float-right">
+                                <Map map={this.state.setting.map.lawnStatus} />
+                            </section>
+                        </div>
                     </div>
-
                 </div>
             </div>
 
@@ -90,32 +125,40 @@ class App extends React.Component {
 class Map extends React.Component{
 	render() {
         var rowLength = this.props.map.length;
+        // TODO row number
+        var colLength = this.props.map[0].length;
+        var arr = Array(colLength).fill(0);
+        const rowX = arr.map((cell, index) =>
+            <td class="tr-col"><h5>{index}</h5></td>
+        );
         const rows = this.props.map.map((row, index) =>
-            <div class = "parent">
-                <h4 class="float-left">{rowLength - 1 - index}</h4>
-                <tr class="map-tr float-right">
-                    {row.map((cell) => {
+            <div>
+                <div class = "parent">
+                    <td class="tr-col-left"><h5>{rowLength - 1 - index}</h5></td>
+                    <tr class="map-tr float-right">
+                        {row.map((cell) => {
+                            return <td class = {cell.replace(/[^a-z]/gi, '')}>{cell.replace(/[^0-9]/gi, '')}</td>
+                        })}
+                    </tr>
 
-                            return <td class = {cell}></td>
-
-                    })}
-                </tr>
+                </div>
             </div>
-
 		);
 		return (
             <div>
                 <h4 class="text-blue">Lawn Map</h4>
                 <div >
-
-
                     <table class="map-table">
                         <tbody>
                         {rows}
+                        <div class = "parent">
+                            <tr class="map-tr float-right">
+                                <td class="tr-col-left"></td>
+                                {rowX}
+                            </tr>
+                        </div>
                         </tbody>
                     </table>
-
-
                 </div>
             </div>
 		)
@@ -126,13 +169,15 @@ class Map extends React.Component{
 class MowerList extends React.Component{
 	render() {
 		const mowers = this.props.mowers.map(mower =>
-			<Mower mower={mower}/>
-		);
+			<Mower mower={mower}
+            />);
+        var mowerID = this.props.mowerID;
+
 		return (
             <div>
                 <h4 class="text-blue">Mower States</h4>
                 <div class="row">
-                    <div class="col-md-12 table-responsive table-striped">
+                    <div class="col-md-12 table-responsive">
                         <div class="tableFixHead">
                             <table class="table table-bordered">
                                 <thead class="thead-light">
@@ -145,6 +190,7 @@ class MowerList extends React.Component{
                                 </thead>
                                 <tbody>
                                 {mowers}
+
                                 </tbody>
                             </table>
                         </div>
@@ -158,6 +204,10 @@ class MowerList extends React.Component{
 // tag::mower[]
 class Mower extends React.Component{
 	render() {
+        // TODO: highlight row
+        var mowerID = this.props.mowerID;
+        //var mower_id = this.props.mower.mower_id;
+        // var isColored = Boolean(mowerID == mower_id);
 		return (
 			<tr>
 				<td>{this.props.mower.mower_id}</td>
@@ -188,7 +238,7 @@ class Report extends React.Component{
                                 </tr>
                             </thead>
                             <tbody>
-                                <tr>
+                                <tr >
                                     <td>{this.props.report.initalGrassCount}</td>
                                     <td>{this.props.report.cutGrassCount}</td>
                                     <td>{this.props.report.grassRemaining}</td>

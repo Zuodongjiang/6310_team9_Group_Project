@@ -16,6 +16,12 @@ body {
     display: flex;
     flex-direction:row;
 }
+.strip {
+    background-color: rgb(202, 213, 223)
+}
+.box {
+    background: #dfecf7
+}
 .float-left {
     float:left;
 }
@@ -58,8 +64,8 @@ body {
     text-align: center
 }
 
-.mower_charge {
-    background-image: url("mower.png"), url("charge.png");
+.mowercharge {
+    background-image: url("mowercharge.png");
     background-size: cover;
     border: 1px solid black;
     width: 60px;
@@ -69,8 +75,7 @@ body {
 
 .charge {
     background-image: url("charge.png");
-    background-position: right;
-    background-repeat: no-repeat;
+    background-size: cover;
     border: 1px solid black;
     width: 60px;
     height: 60px;
@@ -85,6 +90,21 @@ body {
     text-align: center
 }
 
+.tr-col {
+    width: 60px;
+    height: 60px;
+    text-align: center
+}
+.bg-color {
+    background-color: #F5F5F5
+}
+
+.tr-col-left {
+    width: 20px;
+    height: 60px;
+    text-align: center
+}
+
 .map-tr {
     height: 60px;
 
@@ -92,6 +112,10 @@ body {
 
 .link {
     cursor:pointer;
+}
+
+.true {
+    background-color: yellow;
 }
 
 .hidden {
