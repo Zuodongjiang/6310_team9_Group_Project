@@ -1,10 +1,10 @@
 package com.example.mainpanel.back_end;
 
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
@@ -44,7 +44,13 @@ public class Mower {
 	private String trackMoveCheck;
 	private String trackScanResults;
 
-	private final int CHARGE_CODE = 4;
+	// elements code
+	private static final int UNKNOWN_CODE = -1;
+	private static final int EMPTY_CODE = 0;
+	private static final int GRASS_CODE = 1;
+//	private static final int CRATER_CODE = 2;
+//	private static final int FENCE_CODE = 3;
+	private static final int CHARGE_CODE = 4;
 
 //	int code = mowerID*10 + 100 + CHARGE_CODE;
 
@@ -53,7 +59,6 @@ public class Mower {
 	int mapWidth = 2 * 17 + 1;
 	int mapHeight = 2 * 17 + 1;
 
-	int[][] mowerMap;
 
 	private String[] dirs = { "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest" };
 	private List<String> path = new ArrayList<>();
@@ -61,6 +66,8 @@ public class Mower {
 	int curEnergy = 0;
 	int maxEnergy = 0;
 	public int stallTurn = 0;
+	
+	//private HashSet<Point> chargeLocations = new HashSet<>();
 
 	public Mower(String direction, int id, int energy_capacity, int numMowers) {
 
@@ -71,6 +78,8 @@ public class Mower {
 
 		mowerX = 17;
 		mowerY = 17;
+		
+		//chargeLocations.add(new Point(mowerX,mowerY));//add initial charge location
 
 		xDIR_MAP.put("north", 0);
 		xDIR_MAP.put("northeast", 1);
@@ -90,23 +99,38 @@ public class Mower {
 		yDIR_MAP.put("southwest", -1);
 		yDIR_MAP.put("west", 0);
 		yDIR_MAP.put("northwest", 1);
+		
 
 		//put self on the map: code = mowerID*10+100+CHARGE_CODE
 //		int code = mowerID*10 + 100 + CHARGE_CODE;
-		int code = mowerID + 5;
-		InfoMap mowerMap = cc.getMap(mowerID);
-		mowerMap.updateMapSquare(mowerX, mowerY, code);
 	}
+	
+	
 	private void scan(int mowerID) {
 		sim.scan(mowerID);
+		/***
+		for (Integer i: scannedInfo){
+			if (i.equals(CHARGE_CODE)){
+				int j = scannedInfo.indexOf(i);
+				String dir = dirs[j];
+				int xDir = xDIR_MAP.get(dir);
+				int yDir = yDIR_MAP.get(dir);
+				Point p = new Point(mowerX+xDir,mowerY+yDir);
+				chargeLocations.add(p);
+			}
+		}
+		***/
 	}
+	
+	
 	private boolean needScan() {
+		InfoMap mowerMap = cc.getMap(mowerID);
 		int i = mowerX;
 		int j = mowerY;
 		int[][] neis = new int[][] { { i, j + 1 }, { i + 1, j + 1 }, { i + 1, j }, { i + 1, j - 1 }, { i, j - 1 },
 				{ i - 1, j - 1 }, { i - 1, j }, { i - 1, j + 1 } };
 		for (int[] nei : neis) {
-			if (mowerMap[nei[0]][nei[1]] == -1) {
+			if (mowerMap.checkSquare(nei[0], nei[1]) == -1) {
 				return true;
 			}
 		}
@@ -118,14 +142,17 @@ public class Mower {
 		if (!validMove()) {
 			return false;
 		}
-		return mowerMap[mowerX + xDIR_MAP.get(mowerDirection)][mowerY + yDIR_MAP.get(mowerDirection)] == 1;
+		InfoMap mowerMap = cc.getMap(mowerID);
+		return mowerMap.checkSquare(mowerX + xDIR_MAP.get(mowerDirection), mowerY + yDIR_MAP.get(mowerDirection)) == 1;
 	}
 
 	// make sure it will not move to unknow area
 	private boolean validMove() {
 		int a = mowerX + xDIR_MAP.get(mowerDirection);
 		int b = mowerY + yDIR_MAP.get(mowerDirection);
-		return mowerMap[a][b] == 0 || mowerMap[a][b] == 1 || mowerMap[a][b] == 4;
+		InfoMap mowerMap = cc.getMap(mowerID);
+		int square = mowerMap.checkSquare(a, b);
+		return square == EMPTY_CODE || square == GRASS_CODE || square == CHARGE_CODE;
 	}
 
 	// move() : mover the mower, if the mower hit the crate or the fence, make
@@ -147,19 +174,41 @@ public class Mower {
 	}
 
 	private int canCutAfterTurning() {
-		int[][] neis = new int[][] { { mowerX, mowerY + 1 }, { mowerX + 1, mowerY + 1 }, { mowerX + 1, mowerY },
-				{ mowerX + 1, mowerY - 1 }, { mowerX, mowerY - 1 }, { mowerX - 1, mowerY - 1 }, { mowerX - 1, mowerY },
-				{ mowerX - 1, mowerY + 1 } };
+		int i = mowerX ;
+		int j = mowerY;
+		InfoMap mowerMap = cc.getMap(mowerID);
+		int[][] neis = new int[][] { { i, j + 1 }, { i + 1, j + 1 }, { i + 1, j }, { i + 1, j - 1 }, { i, j - 1 },
+				{ i - 1, j - 1 }, { i - 1, j }, { i - 1, j + 1 } };
 		for (int k = 0; k < 8; k++) {
-			if (mowerMap[neis[k][0]][neis[k][1]] == 1) {
+			if (mowerMap.checkSquare(neis[k][0], neis[k][1]) == GRASS_CODE) {
 				return k;
 			}
 		}
 		return -1;
 	}
+	
+	/***
+	private void recharge(){
+		InfoMap mowerMap = cc.getMap(mowerID);
+		//if charger is on the direction of moving and energy is less than 4
+		int xDir = xDIR_MAP.get(trackNewDirection);
+		int yDir = yDIR_MAP.get(trackNewDirection);
+		int square1 = mowerMap.checkSquare(mowerX+xDir, mowerY+yDir);
+		int square2 = mowerMap.checkSquare(mowerX+2*xDir, mowerY+2*yDir);
+		//recharge if energy is low 
+		if (square1==CHARGE_CODE && curEnergy<=4 && curEnergy>=1){
+			move();
+		} else if ((square1==EMPTY_CODE || square1==GRASS_CODE) && square2==CHARGE_CODE && curEnergy<=4 && curEnergy>=2){
+			//need to move 2 distance to recharge;
+		}
+	}
+	***/
+	
+
 
 	// find next boundary, or grass to cut, return the closest one
 	private List<String> findPath() {
+		InfoMap mowerMap = cc.getMap(mowerID);
 		int[][] visited = new int[mapWidth][mapHeight];
 		int[][] neis = new int[][] { { 0, 1 }, { 1, 1 }, { 1, 0 }, { 1, -1 }, { 0, -1 }, { -1, -1 }, { -1, 0 },
 				{ -1, 1 } };
@@ -182,13 +231,14 @@ public class Mower {
 					int neiY = cur.y + nei[1];
 
 					if (visited[neiX][neiY] == 0) {
-						if (mowerMap[neiX][neiY] == -1 || mowerMap[neiX][neiY] == 1) {
+						int square = mowerMap.checkSquare(neiX, neiY);
+						if (square == -1 || square == 1) {
 							visited[neiX][neiY] = step;
 							target_x = neiX;
 							target_y = neiY;
 							flag = false;
 							break;
-						} else if (mowerMap[neiX][neiY] == 0) {
+						} else if (square == 0) {
 							queue.offer(new Point(neiX, neiY));
 							visited[neiX][neiY] = step;
 						}
@@ -212,7 +262,7 @@ public class Mower {
 				if (visited[neiX][neiY] == step - 1) {
 					// if the target location is unexplored, do not move to that location, need to
 					// scan it first
-					if (mowerMap[target_x][target_y] != -1) {
+					if (mowerMap.checkSquare(target_x, target_y) != UNKNOWN_CODE) {
 						res.add(dirs[k]);
 					}
 					target_x = neiX;
@@ -226,10 +276,12 @@ public class Mower {
 		// System.out.println(res.toString());
 		return res;
 	}
-
+	
+	/***
 	private boolean isValid(int x, int y) {
 		return x >=0 && x < 31 && y >= 0 && y < 31;
 	}
+	***/
 	// (1) if there is unknown area around the mower, scan first;
 	// (2) if mower can cut any grass without turning, move along this direction
 	// (3) if the mower can cut grass after turning, change the direction of the
@@ -239,34 +291,33 @@ public class Mower {
 	// first, find the path; second move one step along the path. Since the map is
 	// constantly updating, we might need to change the path everything time.
 	// Therefore, path need to be recalculated at each pollMowerForAction.
-	public void pollMowerForAction() {
+	public String pollMowerForAction() {
 		// Since the mowerMaps is updating, at the beginning of the action, get the
 		// latest map, and the position of the mower;
 		// the map and the mower position is updated in the commchannel.
 
 		while(stallTurn > 0) {
 			stallTurn--;
-			return;
+			return "-2"; //stall return -2
 		}
-		mowerMap = cc.mowerMaps[mowerID].map;
 		mowerX = cc.mowerRelativeLocation[mowerID][0];
 		mowerY = cc.mowerRelativeLocation[mowerID][1];
 		// check if need scan
 		if (needScan()) {
 			scan(mowerID);
-			return;
+			return "0";//if scan return 0
 		}
 		// check if can cut without turning
 		if (canCut()) {
 			move();
-			return;
+			return String.format("%d", mowerID);
 		}
 		// check if can cut after turning
 		int dir_index = canCutAfterTurning();
 		if (dir_index >= 0) {
 			System.out.println("turn");
 			turning(dirs[dir_index]);
-			return;
+			return trackNewDirection; // return direction when only redirect 
 		}
 		// find the path, and move one step along the path.
 		path = findPath();
@@ -278,8 +329,9 @@ public class Mower {
 			} else {
 				turning(dir);
 			}
-			return;
+			return String.format("%d", mowerID);
 		}
+		return String.format("%d", mowerID);
 	}
 
 	public void displayActionAndResponses() {

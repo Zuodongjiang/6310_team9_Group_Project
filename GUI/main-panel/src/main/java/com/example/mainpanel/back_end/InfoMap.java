@@ -94,6 +94,7 @@ public class InfoMap {
 		}
 
 	}
+	
 
 	// return scanned info (integer)
 	public int[] scan(int mowerX, int mowerY){

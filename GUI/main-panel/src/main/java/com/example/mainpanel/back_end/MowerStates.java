@@ -1,5 +1,6 @@
 package com.example.mainpanel.back_end;
 
+
 public class MowerStates {
     private int mower_id;
     private String mowerStatus;
@@ -7,7 +8,7 @@ public class MowerStates {
     private int stallTurn;
 
     MowerStates (int mower_id, String mowerStatus, int energyLevel, int stallTurn) {
-    	this.mower_id = mower_id;
+    	this.mower_id = mower_id+1;
     	this.mowerStatus = mowerStatus;
     	this.energyLevel = energyLevel;
     	this.stallTurn = stallTurn;

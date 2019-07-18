@@ -1,5 +1,6 @@
 package com.example.mainpanel.back_end;
 
+
 public class Report {
     private int initalGrassCount;
     private int cutGrassCount;

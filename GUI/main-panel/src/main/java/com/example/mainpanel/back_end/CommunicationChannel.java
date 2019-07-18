@@ -1,5 +1,6 @@
 package com.example.mainpanel.back_end;
 
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -38,12 +39,12 @@ public class CommunicationChannel {
 
 	// Add these static variables
 	private final int UNKNOWN_CODE = -1;
-	private final int EMPTY_CODE = 0;
-	private final int GRASS_CODE = 1;
-	private final int CRATER_CODE = 2;
+//	private final int EMPTY_CODE = 0;
+//	private final int GRASS_CODE = 1;
+//	private final int CRATER_CODE = 2;
 	private final int FENCE_CODE = 3;
-	private final int CHARGE_CODE = 4;
-	private final int MOWER_CODE = 5;
+//	private final int CHARGE_CODE = 4;
+//	private final int MOWER_CODE = 5;
 
 	// Add the list of mower here, and the size of the map. we need to access the
 	// individual mowers using the mowerList
