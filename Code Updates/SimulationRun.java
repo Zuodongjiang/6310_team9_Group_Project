@@ -290,7 +290,7 @@ public class SimulationRun {
 	}
 	
 	public void act(){
-		while(!checkStop() && !pressStop){
+		while(!checkStop() || !pressStop){
 			nextMower = (nextMower + 1) % mowerCount;
 			mowerList[nextMower].pollMowerForAction();
 		}		
