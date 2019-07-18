@@ -15,6 +15,9 @@ public class SimulationRun {
 	private int[][] mowerPosition;
 	private InfoMap lawnMap;
 	private CommunicationChannel cc;
+	
+	//used for stopRun button on GUI
+	private boolean pressStop;
 
 	private List<Integer> mowerKnowPosition = new ArrayList<>();
 	// private Lawn lawn;
@@ -65,6 +68,7 @@ public class SimulationRun {
 		yDIR_MAP.put("west", 0);
 		yDIR_MAP.put("northwest", 1);
 		
+		pressStop = false;
 		uploadStartingFile(filePath);
 	}
 
@@ -286,13 +290,17 @@ public class SimulationRun {
 	}
 	
 	public void act(){
-		while(!stopRun()){
+		while(!checkStop() && !pressStop){
 			nextMower = (nextMower + 1) % mowerCount;
 			mowerList[nextMower].pollMowerForAction();
 		}		
 	}
 	 
-	public boolean stopRun() {
+	public void stopRun(){
+		pressStop = true;
+	}
+	
+	public boolean checkStop() {
 		if (activeMowerCount == 0 || total_cut == total_grass || total_step == numTurn) {
 			System.out.println("mowerCount" + activeMowerCount );
 			System.out.println("mowerCount" + numTurn );
