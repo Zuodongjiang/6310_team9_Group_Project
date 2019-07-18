@@ -25,7 +25,7 @@ public class Mower {
 		}
 	}
 	public int mowerID = 0;
-	public static SimDriver sim;
+	public static SimulationRun sim;
 	static CommunicationChannel cc;
 
 	// discovered: a list of mower that the mower can see, the Point records the
@@ -35,8 +35,8 @@ public class Mower {
 	private String mowerDirection = "North";
 	private static HashMap<String, Integer> xDIR_MAP = new HashMap<>();
 	private static HashMap<String, Integer> yDIR_MAP = new HashMap<>();
-	//a set to record the id that this mower has discovered
-    private HashSet<Integer> discovered_mowers;
+
+ 
     
 	private String trackAction;
 	private Integer trackMoveDistance;
@@ -44,7 +44,7 @@ public class Mower {
 	private String trackMoveCheck;
 	private String trackScanResults;
 	
-	private final int CHARGE_CODE = 4;
+
 	
 //	int code = mowerID*10 + 100 + CHARGE_CODE;
 	
@@ -53,7 +53,6 @@ public class Mower {
 	int mapWidth = 2 * 17 + 1;
 	int mapHeight = 2 * 17 + 1;
 
-	int[][] mowerMap;
 
 	private String[] dirs = { "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest" };
 	private List<String> path = new ArrayList<>();
@@ -62,6 +61,14 @@ public class Mower {
 	int maxEnergy = 0;
 	public int stallTurn = 0; 
 	
+	//elements code
+	private static final int UNKNOWN_CODE = -1;
+	private static final int EMPTY_CODE = 0;
+	private static final int GRASS_CODE = 1;
+	private static final int CRATER_CODE = 2;
+	private static final int FENCE_CODE = 3;
+	private static final int CHARGE_CODE = 4;
+		
 	public Mower(String direction, int id, int energy_capacity, int numMowers) {
 		
 
@@ -70,7 +77,7 @@ public class Mower {
 		mowerID = id;
 		maxEnergy = energy_capacity;
 		curEnergy = energy_capacity;
-		discovered_mowers = new HashSet<Integer>();
+
 
 		mowerX = 17;
 		mowerY = 17;
@@ -106,10 +113,11 @@ public class Mower {
 	private boolean needScan() {
 		int i = mowerX;
 		int j = mowerY;
+		InfoMap mowerMap = cc.getMap(mowerID);
 		int[][] neis = new int[][] { { i, j + 1 }, { i + 1, j + 1 }, { i + 1, j }, { i + 1, j - 1 }, { i, j - 1 },
 				{ i - 1, j - 1 }, { i - 1, j }, { i - 1, j + 1 } };
 		for (int[] nei : neis) {
-			if (mowerMap[nei[0]][nei[1]] == -1) {
+			if (mowerMap.checkSquare(nei[0], nei[1]) == -1) {
 				return true;
 			}
 		}
@@ -118,17 +126,19 @@ public class Mower {
 
 	// canCut(): check if mower can cut grass by moving at the current direction
 	private boolean canCut() {
+		InfoMap mowerMap= cc.getMap(mowerID);
 		if (!validMove()) {
 			return false;
 		}
-		return mowerMap[mowerX + xDIR_MAP.get(mowerDirection)][mowerY + yDIR_MAP.get(mowerDirection)] == 1;
+		return mowerMap.checkSquare(mowerX + xDIR_MAP.get(mowerDirection), mowerY + yDIR_MAP.get(mowerDirection)) == 1;
 	}
 
 	// make sure it will not move to unknow area
 	private boolean validMove() {
 		int a = mowerX + xDIR_MAP.get(mowerDirection);
 		int b = mowerY + yDIR_MAP.get(mowerDirection);
-		return mowerMap[a][b] == 0 || mowerMap[a][b] == 1 || mowerMap[a][b] == 4;
+		int square = cc.getMap(mowerID).checkSquare(a, b);
+		return square == EMPTY_CODE || square == GRASS_CODE || square == CHARGE_CODE;
 	}
 
 	// move() : mover the mower, if the mower hit the crate or the fence, make
@@ -154,7 +164,7 @@ public class Mower {
 				{ mowerX + 1, mowerY - 1 }, { mowerX, mowerY - 1 }, { mowerX - 1, mowerY - 1 }, { mowerX - 1, mowerY },
 				{ mowerX - 1, mowerY + 1 } };
 		for (int k = 0; k < 8; k++) {
-			if (mowerMap[neis[k][0]][neis[k][1]] == 1) {
+			if (cc.getMap(mowerID).checkSquare(neis[k][0], neis[k][1]) == GRASS_CODE) {
 				return k;
 			}
 		}
@@ -185,13 +195,14 @@ public class Mower {
 					int neiY = cur.y + nei[1];
 
 					if (visited[neiX][neiY] == 0) {
-						if (mowerMap[neiX][neiY] == -1 || mowerMap[neiX][neiY] == 1) {
+						int square = cc.getMap(mowerID).checkSquare(neiX, neiY);
+						if (square == UNKNOWN_CODE || square == GRASS_CODE) {
 							visited[neiX][neiY] = step;
 							target_x = neiX;
 							target_y = neiY;
 							flag = false;
 							break;
-						} else if (mowerMap[neiX][neiY] == 0) {
+						} else if (square == EMPTY_CODE) {
 							queue.offer(new Point(neiX, neiY));
 							visited[neiX][neiY] = step;
 						}
@@ -215,7 +226,7 @@ public class Mower {
 				if (visited[neiX][neiY] == step - 1) {
 					// if the target location is unexplored, do not move to that location, need to
 					// scan it first
-					if (mowerMap[target_x][target_y] != -1) {
+					if (cc.getMap(mowerID).checkSquare(target_x, target_y) != UNKNOWN_CODE) {
 						res.add(dirs[k]);
 					}
 					target_x = neiX;
@@ -246,7 +257,7 @@ public class Mower {
 		// Since the mowerMaps is updating, at the beginning of the action, get the
 		// latest map, and the position of the mower;
 		// the map and the mower position is updated in the commchannel.
-		mowerMap = cc.mowerMaps[mowerID].map;
+		
 		mowerX = cc.mowerRelativeLocation[mowerID][0];
 		mowerY = cc.mowerRelativeLocation[mowerID][1];
 		// check if need scan

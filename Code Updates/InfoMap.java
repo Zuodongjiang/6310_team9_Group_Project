@@ -7,7 +7,7 @@ public class InfoMap {
 	
 	private int mapHeight; //lawn height is 1~10 inclusive
 	private int mapWidth;  //lawn width is 1~15 inclusive
-	public int[][] map;
+	private int[][] map;
 	
 	//hashmap to define mower movement on coordinate for each direction
 	private static HashMap<String, Integer> xDIR_MAP = new HashMap<>();

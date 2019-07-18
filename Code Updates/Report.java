@@ -6,6 +6,13 @@ public class Report {
     private int grassRemaining;
     private int turnCount;
 
+    public Report(int initalGrassCount, int cutGrassCount, int grassRemaining, int turnCount){
+    	this.initalGrassCount = initalGrassCount;
+    	this.cutGrassCount = cutGrassCount;
+    	this.grassRemaining = grassRemaining;
+    	this.turnCount = turnCount;
+    }
+    
     public int getGrassRemaining() {
         return grassRemaining;
     }
