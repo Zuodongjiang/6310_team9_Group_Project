@@ -5,7 +5,7 @@ package team_9;
 public class Main {
 
     public static void main(String[] args) {
-        SimDriver monitorSim = new SimDriver();
+        SimultaionRun monitorSim = new SimultaionRun("");
 
         // check for the test scenario file name
         if (args.length == 0) {

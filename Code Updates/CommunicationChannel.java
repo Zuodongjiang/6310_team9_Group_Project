@@ -43,11 +43,11 @@ public class CommunicationChannel {
 	private final int CRATER_CODE = 2;
 	private final int FENCE_CODE = 3;
 	private final int CHARGE_CODE = 4;
-	
+	private final int MOWER_CODE = 5;
 
 	// Add the list of mower here, and the size of the map. we need to access the
 	// individual mowers using the mowerList
-	public static Mower[] mowerList; //Why do we need mowerList here?
+	public static Mower[] mowerList;
 	int mapWidth = 35;
 	int mapHeight = 35;
 
@@ -93,10 +93,9 @@ public class CommunicationChannel {
 	}
 
 	public void updateMowerMap(int mowerID, List<Integer> scanResult) {
-		Mower mower = mowerList[mowerID];
 		int x = mowerRelativeLocation[mowerID][0];
 		int y = mowerRelativeLocation[mowerID][1];
-		InfoMap mowerMap = mowerMaps[mowerID];	
+		int[][] mowerMap = mowerMaps[mowerID].map;
 		int[][] neis = new int[][] { { x, y + 1 }, { x + 1, y + 1 }, { x + 1, y }, { x + 1, y - 1 }, { x, y - 1 },
 				{ x - 1, y - 1 }, { x - 1, y }, { x - 1, y + 1 } };
 		for (int i = 0; i < 8; i++) {
@@ -108,25 +107,22 @@ public class CommunicationChannel {
 				// check left/west, right/east, up/north and down/south boundary
 				if (!mowerBoundary[mowerID][0] && i == 6) {
 					for (int k = 0; k < mapHeight; k++) {
-						mowerMap.updateMapSquare(x, k, FENCE_CODE);
+						mowerMap[x][k] = 3;
 					}
 					mowerBoundary[mowerID][0] = true;
 				} else if (!mowerBoundary[mowerID][1] && i == 2) {
 					for (int k = 0; k < mapHeight; k++) {
-						mowerMap.updateMapSquare(x, k, FENCE_CODE);
-						
+						mowerMap[x][k] = 3;
 					}
 					mowerBoundary[mowerID][1] = true;
 				} else if (!mowerBoundary[mowerID][2] && i == 0) {
 					for (int k = 0; k < mapWidth; k++) {
-						mowerMap.updateMapSquare(k, y, FENCE_CODE);
-						
+						mowerMap[k][y] = 3;
 					}
 					mowerBoundary[mowerID][2] = true;
 				} else if (!mowerBoundary[mowerID][3] && i == 4) {
 					for (int k = 0; k < mapWidth; k++) {
-						mowerMap.updateMapSquare(k, y, FENCE_CODE);
-						
+						mowerMap[k][y] = 3;
 					}
 					mowerBoundary[mowerID][3] = true;
 				}
@@ -137,8 +133,7 @@ public class CommunicationChannel {
 					mowerFindAbsolutePosition[mowerID] = true;
 				}
 			} else {
-				mowerMap.updateMapSquare(x, y, grid_type);
-
+				mowerMap[x][y] = grid_type;
 				if (grid_type >= 5) {
 					int secondMowerID = grid_type - 5;
 					 
@@ -147,22 +142,14 @@ public class CommunicationChannel {
 					int dy = y - mowerRelativeLocation[mowerID][1];
 					
 					// check: at least one of them is not in full Map;
-					if (mowerMaps[mowerID] != mowerMaps[secondMowerID]) {
+					if (mowerMaps[mowerID].map != mowerMaps[secondMowerID].map) {
 						System.out.println(mowerRelativeLocation[mowerID][0] +"ssssssss" +mowerRelativeLocation[mowerID][1]);
 						System.out.println(secondMowerID + " relative pos: " + dx + " " + dy);
 						mergePartialMowerMap(mowerID, secondMowerID, dx, dy);
 
 					}
-//					mergedMap.get(mowerID).addAll(mergedMap.get(secondMowerID));
-//					mergedMap.get(secondMowerID).addAll(mergedMap.get(mowerID));
-					// }
-
 				}
 			}
-
-		}
-		if (mowerID == 1) {
-//			Mower.renderLawn(mowerMaps[1].map);
 
 		}
 	}
@@ -205,19 +192,17 @@ public class CommunicationChannel {
 			for (int j = 0; j < mapHeight; j++) {
 				int x = i + dxx;
 				int y = j + dyy;
-				if (isValidPosition(x, y) && mowerMaps[mowerTwoID].checkSquare(i, j) != UNKNOWN_CODE && mowerMaps[mowerOneID].checkSquare(x, y) == UNKNOWN_CODE) {
+				if (isValidPosition(x, y) && mowerMaps[mowerTwoID].map[i][j] != -1 && mowerMaps[mowerOneID].map[x][y] == -1) {
 					// System.out.println(mowerOneID + " " + mowerTwoID);
 
-					mowerMaps[mowerOneID].updateMapSquare(x, y, mowerMaps[mowerTwoID].checkSquare(i, j));  
+					mowerMaps[mowerOneID].map[x][y] = mowerMaps[mowerTwoID].map[i][j];
 				}
 			}
 		}
 		// assign the mower one map with the merge map; From now on, the two mowers will
 		// use the same mower map.
 		// They share the same mower map now, all updates will be on this map.
-		mowerMaps[mowerTwoID] = mowerMaps[mowerOneID];
-//		Mower.renderLawn(mowerMaps[mowerTwoID].map);
-		// update the position of mower one in the new map;
+		mowerMaps[mowerTwoID].map = mowerMaps[mowerOneID].map;
 		mowerRelativeLocation[mowerTwoID][0] = mowerRelativeLocation[mowerOneID][0] + dx;
 		mowerRelativeLocation[mowerTwoID][1] = mowerRelativeLocation[mowerOneID][1] + dy;
 		System.out.println(mowerRelativeLocation[mowerTwoID][0] + "  y: " + mowerRelativeLocation[mowerTwoID][1]);
@@ -231,7 +216,6 @@ public class CommunicationChannel {
 		// if after merger, it can find its absolute position, then merge with
 		// fullMowerMap
 		if (checkIfKnowPositionInLawn(mowerOneID)) {
-			System.out.println("zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz");
 			mergeFullMowerMap(mowerOneID);
 			mowerFindAbsolutePosition[mowerOneID] = true;
 		}
@@ -245,7 +229,7 @@ public class CommunicationChannel {
 				int x = i - dx;
 				int y = j - dy;
 				if (isValidPosition(x, y) && mowerMaps[mowerOneID].checkSquare(i, j) != UNKNOWN_CODE) {
-					mowerMaps[mowerTwoID].updateMapSquare(x, y, mowerMaps[mowerOneID].checkSquare(i, j)); 
+					mowerMaps[mowerTwoID].updateMapSquare(x, y, mowerMaps[mowerOneID].checkSquare(i, j));
 				}
 			}
 		}
@@ -274,6 +258,7 @@ public class CommunicationChannel {
 		return -1;
 	}
 
+	// check how many mowers found by each other
 	public void check() {
 		for (int i = 0; i < mowerMaps.length; i++) {
 			for (int j = i + 1; j < mowerMaps.length; j++) {

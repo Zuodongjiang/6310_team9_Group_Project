@@ -6,13 +6,12 @@ public class MowerStates {
     private int energyLevel;
     private int stallTurn;
     
-    public MowerStates (int mower_id, String mowerStatus, int energyLevel, int stallTurn) {
+    MowerStates (int mower_id, String mowerStatus, int energyLevel, int stallTurn) {
     	this.mower_id = mower_id;
     	this.mowerStatus = mowerStatus;
     	this.energyLevel = energyLevel;
     	this.stallTurn = stallTurn;
     }
-    
     public int getMower_id() {
         return mower_id;
     }

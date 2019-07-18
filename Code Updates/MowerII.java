@@ -1,5 +1,6 @@
 package team_9;
 
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -14,7 +15,7 @@ import java.util.Queue;
 // It will then determine the next mower action based on the mower map.
 // After determine the action, it will send its next action to the simulationRun. The simulationRun will validate the motion and call communicationChannel to updated all information.  
 
-public class Mower {
+public class MowerII {
 	class Point {
 		int x;
 		int y;
@@ -36,7 +37,7 @@ public class Mower {
 	private static HashMap<String, Integer> xDIR_MAP = new HashMap<>();
 	private static HashMap<String, Integer> yDIR_MAP = new HashMap<>();
 	//a set to record the id that this mower has discovered
-
+    private HashSet<Integer> discovered_mowers;
     
 	private String trackAction;
 	private Integer trackMoveDistance;
@@ -62,12 +63,15 @@ public class Mower {
 	int maxEnergy = 0;
 	public int stallTurn = 0; 
 	
-	public Mower(String direction, int id, int energy_capacity, int numMowers) {
+	public MowerII(String direction, int id, int energy_capacity, int numMowers) {
+		
+
 
 		mowerDirection = direction;
 		mowerID = id;
 		maxEnergy = energy_capacity;
 		curEnergy = energy_capacity;
+		discovered_mowers = new HashSet<Integer>();
 
 		mowerX = 17;
 		mowerY = 17;
@@ -115,25 +119,30 @@ public class Mower {
 
 	// canCut(): check if mower can cut grass by moving at the current direction
 	private boolean canCut() {
-		if (!validMove()) {
-			return false;
+		if (validMove(2) && mowerMap[mowerX + 2 * xDIR_MAP.get(mowerDirection)][mowerY + 2 * yDIR_MAP.get(mowerDirection)] == 1) {
+			return true;
 		}
-		return mowerMap[mowerX + xDIR_MAP.get(mowerDirection)][mowerY + yDIR_MAP.get(mowerDirection)] == 1;
+		if(validMove(1))
+			return mowerMap[mowerX + xDIR_MAP.get(mowerDirection)][mowerY + yDIR_MAP.get(mowerDirection)] == 1;
+		return false;
 	}
 
-	// make sure it will not move to unknow area
-	private boolean validMove() {
-		int a = mowerX + xDIR_MAP.get(mowerDirection);
-		int b = mowerY + yDIR_MAP.get(mowerDirection);
+	// make sure it will not move to unknown area
+	private boolean validMove(int step) {
+		int a = mowerX + step * xDIR_MAP.get(mowerDirection);
+		int b = mowerY + step * yDIR_MAP.get(mowerDirection);
+		if(!isValid(a,b)) {
+			return false;
+		}
 		return mowerMap[a][b] == 0 || mowerMap[a][b] == 1 || mowerMap[a][b] == 4;
 	}
 
 	// move() : mover the mower, if the mower hit the crate or the fence, make
 	// crashed = true and return, otherwise, generate the motion.
 
-	private void move() {
-		int dx = xDIR_MAP.get(mowerDirection);
-		int dy = yDIR_MAP.get(mowerDirection);
+	private void move(int step) {
+		int dx = step * xDIR_MAP.get(mowerDirection);
+		int dy = step * yDIR_MAP.get(mowerDirection);
 		sim.validateMove(mowerID, dx, dy);
 	}
 
@@ -149,10 +158,12 @@ public class Mower {
 	private int canCutAfterTurning() {
 		int[][] neis = new int[][] { { mowerX, mowerY + 1 }, { mowerX + 1, mowerY + 1 }, { mowerX + 1, mowerY },
 				{ mowerX + 1, mowerY - 1 }, { mowerX, mowerY - 1 }, { mowerX - 1, mowerY - 1 }, { mowerX - 1, mowerY },
-				{ mowerX - 1, mowerY + 1 } };
-		for (int k = 0; k < 8; k++) {
-			if (mowerMap[neis[k][0]][neis[k][1]] == 1) {
-				return k;
+				{ mowerX - 1, mowerY + 1 }, { mowerX, mowerY + 2 }, { mowerX + 2, mowerY + 2 }, { mowerX + 2, mowerY },
+				{ mowerX + 2, mowerY - 2 }, { mowerX, mowerY - 2 }, { mowerX - 2, mowerY - 2 }, { mowerX - 2, mowerY },
+				{ mowerX - 2, mowerY + 2 } };
+		for (int k = 15; k >=0 ; k--) {
+			if (isValid(neis[k][0], neis[k][1]) && mowerMap[neis[k][0]][neis[k][1]] == 1) {
+				return k % 8;
 			}
 		}
 		return -1;
@@ -228,7 +239,7 @@ public class Mower {
 	}
 	
 	private boolean isValid(int x, int y) {
-		return x >=0 && x < 31 && y >= 0 && y < 31;
+		return x >=0 && x < mapHeight && y >= 0 && y < mapWidth;
 	}
 	// (1) if there is unknown area around the mower, scan first;
 	// (2) if mower can cut any grass without turning, move along this direction
@@ -243,11 +254,6 @@ public class Mower {
 		// Since the mowerMaps is updating, at the beginning of the action, get the
 		// latest map, and the position of the mower;
 		// the map and the mower position is updated in the commchannel.
-		
-		while(stallTurn > 0) {
-			stallTurn--;
-			return;
-		}
 		mowerMap = cc.mowerMaps[mowerID].map;
 		mowerX = cc.mowerRelativeLocation[mowerID][0];
 		mowerY = cc.mowerRelativeLocation[mowerID][1];
@@ -258,7 +264,13 @@ public class Mower {
 		}
 		// check if can cut without turning
 		if (canCut()) {
-			move();
+			int x2 = mowerX + 2 * xDIR_MAP.get(mowerDirection);
+			int y2 =  mowerY + 2 * yDIR_MAP.get(mowerDirection);
+			if(isValid(x2, y2) && mowerMap[x2][y2] == 1) {
+				move(2);
+			} else {
+				move(1);
+			}
 			return;
 		}
 		// check if can cut after turning
@@ -273,7 +285,7 @@ public class Mower {
 		if (path.size() > 0) {
 			String dir = path.get(0);
 			if (dir == mowerDirection) {
-				move();
+				move(1);
 				// path.remove(0);
 			} else {
 				turning(dir);
