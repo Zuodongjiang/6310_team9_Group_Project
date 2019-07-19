@@ -75,7 +75,7 @@ public class DemoApplication {
 	@PatchMapping(value = "/next")
 	public String nextRun() throws JsonProcessingException {
 		// 1. move mower to next - return current move Mower ID
-		int mowerID = monitorSim.moveNext();
+		String[] mowerID = monitorSim.moveNext();
 
 		// 2. map
 		lawnMap = monitorSim.getLawnMap();
