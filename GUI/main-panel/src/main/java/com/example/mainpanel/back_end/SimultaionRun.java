@@ -235,15 +235,15 @@ public class SimultaionRun {
 
 	public boolean validateMove(int mowerID, int dx, int dy) {
 		System.out.println("move");
-		total_step++;
 		mowerList[mowerID].curEnergy--;
 		int x_pos = mowerPosition[mowerID][0];
 		int y_pos = mowerPosition[mowerID][1];
+		int square = lawnMap.checkSquare(x_pos + dx, y_pos + dy);
 		if (x_pos + dx < 0 || x_pos + dx >= lawnMap.getLawnWidth() || y_pos + dy < 0 || y_pos + dy >= lawnMap.getLawnHeight()) {
 			removeMower(mowerID);
 			return false;
 		} else {
-			switch (lawnMap.checkSquare(x_pos + dx, y_pos + dy)) {
+			switch (square) {
 			case EMPTY_CODE:
 				updatePosition(mowerID, dx, dy);
 				return true;
@@ -257,10 +257,13 @@ public class SimultaionRun {
 				charge(mowerID);
 				updatePosition(mowerID, dx, dy);
 				return true;
-			default:
-				return true;
+			default://if square contains another mower
+				Mower mower = mowerList[mowerID];
+				System.out.println(String.format("stall,%d", mower.getMoveDistance()));
+				return false; 
 			}
 		}
+
 	}
 
 	private void removeMower(int mowerID) {

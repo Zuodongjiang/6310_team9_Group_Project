@@ -68,12 +68,11 @@ public class CommunicationChannel {
 
 		mowerBoundary = new boolean[numMowers][4];
 		mowerFindAbsolutePosition = new boolean[numMowers];
-		mergedMap = new HashMap<>();
-		/***how could all map merge at the beginning of run???
+		mergedMap = new HashMap<>();		
 		for (int i = 0; i < numMowers; i++) {
 			mergedMap.put(i, new HashSet<Integer>());
 		}
-		***/
+		
 	}
 
 

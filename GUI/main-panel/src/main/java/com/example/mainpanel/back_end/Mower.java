@@ -358,6 +358,10 @@ public class Mower {
 		System.out.println("mowerX: " + mowerX + " mowerY: " + mowerY);
 	}
 
+	public int getMoveDistance(){
+		return this.trackMoveDistance;
+	}
+	
 	private static void renderHorizontalBar(int size) {
 		System.out.print(" ");
 		for (int k = 0; k < size; k++) {
