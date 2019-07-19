@@ -35,7 +35,7 @@ public class CommunicationChannel {
 	// left, right, up, down;
 	private static boolean[][] mowerBoundary;
 	private static boolean[] mowerFindAbsolutePosition;
-	Map<Integer, Set<Integer>> mergedMap = new HashMap<>();
+	Map<Integer, Set<Integer>> mergedMap;
 
 	// Add these static variables
 	private final int UNKNOWN_CODE = -1;
@@ -60,6 +60,7 @@ public class CommunicationChannel {
 		mapHeight = 35; // lawn height is 1~15 inclusive
 		mapWidth = 35; // lawn width is 1~15 inclusive
 		for (int i = 0; i < numMowers; i++) {
+			//In the beginning all mower maps are the same.
 			mowerMaps[i] = new InfoMap(mapWidth, mapHeight, 0, null, 0, null, false);
 			mowerRelativeLocation[i][0] = 17;
 			mowerRelativeLocation[i][1] = 17;
@@ -67,15 +68,15 @@ public class CommunicationChannel {
 
 		mowerBoundary = new boolean[numMowers][4];
 		mowerFindAbsolutePosition = new boolean[numMowers];
+		mergedMap = new HashMap<>();
+		/***how could all map merge at the beginning of run???
 		for (int i = 0; i < numMowers; i++) {
 			mergedMap.put(i, new HashSet<Integer>());
 		}
+		***/
 	}
 
-	// Use mergePartialMowerMap and mergeTwoMowerMap to replace this method
-	public void combineMaps(int mowerID_1, int mowerID_2) {
 
-	}
 
 	public InfoMap getMap(int mowerID) {
 		return mowerMaps[mowerID];

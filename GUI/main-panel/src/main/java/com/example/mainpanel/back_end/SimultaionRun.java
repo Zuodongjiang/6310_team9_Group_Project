@@ -43,7 +43,7 @@ public class SimultaionRun {
 //	private int collision_delay = 0;
 	
 
-	public SimultaionRun(FilePath filePath) {
+	public SimultaionRun(String filePath) {
 		xDIR_MAP = new HashMap<>();
 		xDIR_MAP.put("north", 0);
 		xDIR_MAP.put("northeast", 1);
@@ -65,7 +65,7 @@ public class SimultaionRun {
 		yDIR_MAP.put("northwest", 1);
 		
 		pressStop = false;
-		uploadStartingFile(filePath.getFilePath());
+		uploadStartingFile(filePath);
 	}
 
 	public void uploadStartingFile(String testFileName) {
@@ -147,12 +147,12 @@ public class SimultaionRun {
 	
 	// poll next available mower
 	public String moveNext() {
-		/*** should not skip stalled mower
+		//should not skip stalled mower
 		while (!mowerList[nextMower].enable) {
 			nextMower++;
 			countTurn();
 		}
-		***/
+	
 		if (!checkStop()) {
 			//if scan return 0
 			String ret = mowerList[nextMower].pollMowerForAction();
@@ -193,29 +193,37 @@ public class SimultaionRun {
 	}
 	
 	public void scan(int mowerID) {
-		total_step++;
-//		Mower mower = mowerList[mowerID];
+		System.out.println("scan");
+		Mower mower = mowerList[mowerID];
+		mower.curEnergy--;
 		int x_pos = mowerPosition[mowerID][0];
 		int y_pos = mowerPosition[mowerID][1];
 //		int dx = mower.mowerX - x_pos;
 //		int dy = mower.mowerY - y_pos;
 		List<Integer> res = new ArrayList<>();
-		List<String> stringMap = new ArrayList<>();
+
 		int[][] neis = new int[][] { { x_pos, y_pos + 1 }, { x_pos + 1, y_pos + 1 }, { x_pos + 1, y_pos },
 				{ x_pos + 1, y_pos - 1 }, { x_pos, y_pos - 1 }, { x_pos - 1, y_pos - 1 }, { x_pos - 1, y_pos },
 				{ x_pos - 1, y_pos + 1 } };
-
+		int i=0;
+		String square;
 		for (int[] nei : neis) {
 			if (nei[0] < 0 || nei[0] >= lawnMap.getLawnWidth() || nei[1] < 0 || nei[1] >= lawnMap.getLawnHeight()) {
 				res.add(FENCE_CODE);
-				stringMap.add(InfoMap.translateSquare(FENCE_CODE));
+				square = InfoMap.translateSquare(FENCE_CODE);
+
 			} else {
 				int code = lawnMap.checkSquare(nei[0], nei[1]);
 				res.add(code);
-				stringMap.add(InfoMap.translateSquare(code));
+				square = InfoMap.translateSquare(code);
+			}
+			System.out.print(square);
+			if (i<7){
+				System.out.print(",");
+			} else {
+				System.out.print("/n");
 			}
 		}
-		System.out.println("scan: " + stringMap);
 		cc.updateMowerMap(mowerID, res);
 	}
 
