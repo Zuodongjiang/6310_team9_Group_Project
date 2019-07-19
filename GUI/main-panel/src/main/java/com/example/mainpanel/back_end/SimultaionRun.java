@@ -65,7 +65,7 @@ public class SimultaionRun {
 		yDIR_MAP.put("northwest", 1);
 		
 		pressStop = false;
-		uploadStartingFile(FilePath filePath);
+		uploadStartingFile(filePath);
 	}
 
 	public void uploadStartingFile(FilePath file) {
@@ -454,8 +454,9 @@ public class SimultaionRun {
 		
 	}
 	
+	
 	public static void main(String[] args) {
-		String arg = "cs6310_a7_test8.txt";
+		FilePath arg = new FilePath("cs6310_a7_test8.txt");
 		SimultaionRun test = new SimultaionRun(arg);
 		test.renderLawn();
 		test.act();

@@ -317,7 +317,7 @@ public class Mower {
 		if (dir_index >= 0) {
 			System.out.println("turn");
 			turning(dirs[dir_index]);
-			return trackNewDirection; // return direction when only redirect 
+			return trackNewDirection; // return direction when redirect 
 		}
 		// find the path, and move one step along the path.
 		path = findPath();
@@ -325,11 +325,13 @@ public class Mower {
 			String dir = path.get(0);
 			if (dir == mowerDirection) {
 				move();
+				return String.format("%d", mowerID);
 				// path.remove(0);
 			} else {
 				turning(dir);
+				return trackNewDirection; // return direction when redirect 
 			}
-			return String.format("%d", mowerID);
+			
 		}
 		return String.format("%d", mowerID);
 	}
