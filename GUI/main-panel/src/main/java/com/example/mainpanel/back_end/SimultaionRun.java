@@ -3,9 +3,7 @@ package com.example.mainpanel.back_end;
 
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Scanner;
 
 public class SimultaionRun {
@@ -209,7 +207,8 @@ public class SimultaionRun {
 		int y_pos = mowerPosition[mowerID][1];
 //		int dx = mower.mowerX - x_pos;
 //		int dy = mower.mowerY - y_pos;
-		List<Integer> res = new ArrayList<>();
+		int[] res = new int[8];
+	
 
 		int[][] neis = new int[][] { { x_pos, y_pos + 1 }, { x_pos + 1, y_pos + 1 }, { x_pos + 1, y_pos },
 				{ x_pos + 1, y_pos - 1 }, { x_pos, y_pos - 1 }, { x_pos - 1, y_pos - 1 }, { x_pos - 1, y_pos },
@@ -218,12 +217,12 @@ public class SimultaionRun {
 		String square;
 		for (int[] nei : neis) {
 			if (nei[0] < 0 || nei[0] >= lawnMap.getLawnWidth() || nei[1] < 0 || nei[1] >= lawnMap.getLawnHeight()) {
-				res.add(FENCE_CODE);
+				res[i]=FENCE_CODE;
 				square = InfoMap.translateSquare(FENCE_CODE);
 
 			} else {
 				int code = lawnMap.checkSquare(nei[0], nei[1]);
-				res.add(code);				
+				res[i]=code;				
 				square = InfoMap.translateSquare(code);
 			}
 			System.out.print(square);

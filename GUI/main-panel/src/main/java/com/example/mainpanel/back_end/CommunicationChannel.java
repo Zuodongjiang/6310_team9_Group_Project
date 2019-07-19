@@ -3,7 +3,6 @@ package com.example.mainpanel.back_end;
 
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -93,7 +92,7 @@ public class CommunicationChannel {
 		}
 	}
 
-	public void updateMowerMap(int mowerID, List<Integer> scanResult) {
+	public void updateMowerMap(int mowerID, int[] scanResult) {
 		int x = mowerRelativeLocation[mowerID][0];
 		int y = mowerRelativeLocation[mowerID][1];
 		int[][] mowerMap = mowerMaps[mowerID].map;
@@ -103,7 +102,7 @@ public class CommunicationChannel {
 			int[] nei = neis[i];
 			x = nei[0];
 			y = nei[1];
-			int grid_type = scanResult.get(i);
+			int grid_type = scanResult[i];
 			if (!mowerFindAbsolutePosition[mowerID] && grid_type == FENCE_CODE) {
 				// check left/west, right/east, up/north and down/south boundary
 				if (!mowerBoundary[mowerID][0] && i == 6) {

@@ -1,6 +1,5 @@
 package com.example.mainpanel.back_end;
 
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -332,7 +331,6 @@ public class Mower {
 		// check if can cut after turning
 		int dir_index = canCutAfterTurning();
 		if (dir_index >= 0) {
-			System.out.println("turn");
 			turning(dirs[dir_index]);
 			return String.format("move,%d,%s",trackMoveDistance,trackNewDirection); // return direction when redirect 
 		}
