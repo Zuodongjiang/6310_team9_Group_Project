@@ -66,11 +66,11 @@ public class SimultaionRun {
 		yDIR_MAP.put("northwest", 1);
 		
 		pressStop = false;
-		uploadStartingFile(filePath);
+		uploadStartingFile(filePath.getFilePath());
 	}
 
-	public void uploadStartingFile(FilePath file) {
-		String testFileName = file.getFilePath();
+	public void uploadStartingFile(String testFileName) {
+
 		String DELIMITER = ",";
 
 		try {
@@ -463,9 +463,9 @@ public class SimultaionRun {
 		
 	}
 	
-	
+	/***
 	public static void main(String[] args) {
-		FilePath arg = new FilePath("cs6310_a7_test8.txt");
+		String arg = "cs6310_a7_test8.txt";
 		SimultaionRun test = new SimultaionRun(arg);
 		test.renderLawn();
 		test.act();
@@ -478,4 +478,5 @@ public class SimultaionRun {
 //		}
 		test.renderLawn();
 	}
+	***/
 }
