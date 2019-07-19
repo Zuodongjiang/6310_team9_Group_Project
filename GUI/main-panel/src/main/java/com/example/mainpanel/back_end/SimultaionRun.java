@@ -363,7 +363,7 @@ public class SimultaionRun {
 	//		mowerList[nextMower].pollMowerForAction();
 	//		nextMower = (nextMower + 1) % mowerCount;
 		}		
-		System.out.println(total_step + " total turns " + numTurn);
+		System.out.println(String.format("%d,%d,%d,%d", lawnMap.getLawnWidth()*lawnMap.getLawnHeight(),total_grass,total_cut,numTurn));
 	}
 	 
 	public void stopRun(){
