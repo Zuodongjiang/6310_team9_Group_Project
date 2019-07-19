@@ -40,7 +40,8 @@ public class SimultaionRun {
 	private int numTurn = 0;
 	private int activeMowerCount = 0;
 	private static int mowerCount = 0;
-//	private int collision_delay = 0;
+	private int collision_delay;
+
 	
 
 	public SimultaionRun(FilePath filePath) {
@@ -94,7 +95,7 @@ public class SimultaionRun {
 			Mower.sim = this;
 			//collision delay
 			tokens = takeCommand.nextLine().split(DELIMITER);
-	//		collision_delay = Integer.parseInt(tokens[0]);  //line 4
+			collision_delay = Integer.parseInt(tokens[0]);  //line 4
 			
 			//energy capacity
 			tokens = takeCommand.nextLine().split(DELIMITER);
@@ -248,7 +249,7 @@ public class SimultaionRun {
 		int y_pos = mowerPosition[mowerID][1];
 		int square = lawnMap.checkSquare(x_pos + dx, y_pos + dy);
 		if (x_pos + dx < 0 || x_pos + dx >= lawnMap.getLawnWidth() || y_pos + dy < 0 || y_pos + dy >= lawnMap.getLawnHeight()) {
-			removeMower(mowerID);
+			removeMower(mowerID);//crashed
 			return false;
 		} else {
 			switch (square) {
@@ -258,15 +259,16 @@ public class SimultaionRun {
 			case GRASS_CODE:
 				updatePosition(mowerID, dx, dy);
 				return true;
-			case CRATER_CODE:
+			case CRATER_CODE://crashed
 				removeMower(mowerID);
 				return false;
 			case CHARGE_CODE:
 				charge(mowerID);
 				updatePosition(mowerID, dx, dy);
 				return true;
-			default://if square contains another mower
+			default://if square contains another mower 
 				Mower mower = mowerList[mowerID];
+				mower.stallTurn = this.collision_delay;
 				System.out.println(String.format("stall,%d", mower.getMoveDistance()));
 				return false; 
 			}

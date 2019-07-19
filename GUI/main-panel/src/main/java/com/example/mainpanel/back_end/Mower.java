@@ -1,6 +1,5 @@
 package com.example.mainpanel.back_end;
 
-
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -63,9 +62,11 @@ public class Mower {
 	private String[] dirs = { "north", "northeast", "east", "southeast", "south", "southwest", "west", "northwest" };
 	private List<String> path = new ArrayList<>();
 	boolean enable = true;
-	int curEnergy = 0;
-	int maxEnergy = 0;
-	public int stallTurn = 0;
+	int curEnergy;
+	int maxEnergy;
+	public int stallTurn;
+
+
 	
 	//private HashSet<Point> chargeLocations = new HashSet<>();
 
@@ -79,6 +80,8 @@ public class Mower {
 		mowerX = 17;
 		mowerY = 17;
 		
+		stallTurn = 0;
+
 		//chargeLocations.add(new Point(mowerX,mowerY));//add initial charge location
 
 		xDIR_MAP.put("north", 0);
@@ -308,6 +311,7 @@ public class Mower {
 
 		while(stallTurn > 0) {
 			stallTurn--;
+			trackAction = "stall";
 			return "stall"; 
 		}
 		mowerX = cc.mowerRelativeLocation[mowerID][0];
