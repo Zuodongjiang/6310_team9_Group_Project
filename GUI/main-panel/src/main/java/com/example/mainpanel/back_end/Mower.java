@@ -308,26 +308,26 @@ public class Mower {
 
 		while(stallTurn > 0) {
 			stallTurn--;
-			return "-2"; //stall return -2
+			return "stall"; 
 		}
 		mowerX = cc.mowerRelativeLocation[mowerID][0];
 		mowerY = cc.mowerRelativeLocation[mowerID][1];
 		// check if need scan
 		if (needScan()) {
 			scan(mowerID);
-			return "0";//if scan return 0
+			return "scan";
 		}
 		// check if can cut without turning
 		if (canCut()) {
 			move();
-			return String.format("%d", mowerID);
+			return String.format("move,%d,%s",trackMoveDistance,trackNewDirection);
 		}
 		// check if can cut after turning
 		int dir_index = canCutAfterTurning();
 		if (dir_index >= 0) {
 			System.out.println("turn");
 			turning(dirs[dir_index]);
-			return trackNewDirection; // return direction when redirect 
+			return String.format("move,%d,%s",trackMoveDistance,trackNewDirection); // return direction when redirect 
 		}
 		// find the path, and move one step along the path.
 		path = findPath();
@@ -335,15 +335,13 @@ public class Mower {
 			String dir = path.get(0);
 			if (dir == mowerDirection) {
 				move();
-				return String.format("%d", mowerID);
 				// path.remove(0);
 			} else {
 				turning(dir);
-				return trackNewDirection; // return direction when redirect 
 			}
 			
 		}
-		return String.format("%d", mowerID);
+		return String.format("move,%d,%s",trackMoveDistance,trackNewDirection);
 	}
 
 	public void displayActionAndResponses() {

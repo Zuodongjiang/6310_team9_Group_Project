@@ -147,23 +147,30 @@ public class SimultaionRun {
 	
 	
 	// poll next available mower
-	public String moveNext() {
+	public String[] moveNext() {
+		String[] ret = new String[2];
+		String action;
+		Mower mower = mowerList[nextMower];
 		//should not skip stalled mower
-		while (!mowerList[nextMower].enable) {
+		while (!mower.enable) {
 			nextMower++;
 			countTurn();
 		}
 	
 		if (!checkStop()) {
 			//if scan return 0
-			String ret = mowerList[nextMower].pollMowerForAction();
+			action = mowerList[nextMower].pollMowerForAction();
 			nextMower++;
 			countTurn();
-			return ret; //return number according to mower action
+	
 		} else {
 			//stop
-			return "-1";
+			action = "stop";
 		}
+		
+		ret[0] = String.format("mower_%d", mower.mowerID+1);
+		ret[1] = action;
+		return ret;
 	}
 	
 	private void countTurn() {
