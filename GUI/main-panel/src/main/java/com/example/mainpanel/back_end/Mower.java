@@ -162,6 +162,16 @@ public class Mower {
 		int dx = xDIR_MAP.get(mowerDirection);
 		int dy = yDIR_MAP.get(mowerDirection);
 		sim.validateMove(mowerID, dx, dy);
+		//added redirection after move
+		int dir_index = canCutAfterTurning();
+		if (dir_index >=0 ){
+			mowerDirection = dirs[dir_index];
+			trackNewDirection = mowerDirection;
+		}
+		trackAction = "move";
+		trackMoveDistance = 1;
+		trackNewDirection = mowerDirection;
+		displayActionAndResponses();
 	}
 
 	private void turning(String dir) {
