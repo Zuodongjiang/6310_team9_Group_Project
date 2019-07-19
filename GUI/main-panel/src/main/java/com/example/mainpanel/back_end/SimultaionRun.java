@@ -43,7 +43,7 @@ public class SimultaionRun {
 //	private int collision_delay = 0;
 	
 
-	public SimultaionRun(String filePath) {
+	public SimultaionRun(FilePath filePath) {
 		xDIR_MAP = new HashMap<>();
 		xDIR_MAP.put("north", 0);
 		xDIR_MAP.put("northeast", 1);
@@ -65,10 +65,11 @@ public class SimultaionRun {
 		yDIR_MAP.put("northwest", 1);
 		
 		pressStop = false;
-		uploadStartingFile(filePath);
+		uploadStartingFile(FilePath filePath);
 	}
 
-	public void uploadStartingFile(String testFileName) {
+	public void uploadStartingFile(FilePath file) {
+		String testFileName = file.getFilePath();
 		String DELIMITER = ",";
 
 		try {
