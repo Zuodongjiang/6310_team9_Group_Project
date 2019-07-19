@@ -184,7 +184,8 @@ public class Mower {
 		mowerDirection = dir;
 
 		trackNewDirection = mowerDirection;
-		displayActionAndResponses();
+		System.out.println(String.format("move,0,%s", trackNewDirection));
+	//	displayActionAndResponses();
 	}
 
 	private int canCutAfterTurning() {
@@ -350,11 +351,12 @@ public class Mower {
 		return String.format("move,%d,%s",trackMoveDistance,trackNewDirection);
 	}
 
+	
 	public void displayActionAndResponses() {
-		// display the mower's actions
-		System.out.print(trackAction);
+		// display the mower's actions - no need
+	//	System.out.print(trackAction);
 		if (trackAction.equals("move")) {
-			System.out.println("," + trackMoveDistance + "," + trackNewDirection);
+			System.out.println("move," + trackMoveDistance + "," + trackNewDirection);
 		} else {
 			System.out.println();
 		}
@@ -369,6 +371,7 @@ public class Mower {
 			System.out.println("action not recognized");
 		}
 	}
+	
 
 	public void position() {
 		System.out.println("mowerX: " + mowerX + " mowerY: " + mowerY);

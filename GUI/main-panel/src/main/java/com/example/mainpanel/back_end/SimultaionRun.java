@@ -223,7 +223,7 @@ public class SimultaionRun {
 
 			} else {
 				int code = lawnMap.checkSquare(nei[0], nei[1]);
-				res.add(code);
+				res.add(code);				
 				square = InfoMap.translateSquare(code);
 			}
 			System.out.print(square);
@@ -232,8 +232,11 @@ public class SimultaionRun {
 			} else {
 				System.out.print("/n");
 			}
+			i++;
 		}
 		cc.updateMowerMap(mowerID, res);
+		
+		
 	}
 
 	/***

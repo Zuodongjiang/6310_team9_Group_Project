@@ -1,5 +1,6 @@
 package com.example.mainpanel.back_end;
 
+
 import java.util.HashMap;
 
 public class InfoMap {
@@ -73,14 +74,14 @@ public class InfoMap {
 			}
 		}
 
-		// fill in the lawn location with CHARGE & mowers
+		// fill in the lawn location with CHARGE & mowers , chargeNo==mowerNo
 		if (chargeNo > 0 && fullMap) {
 			for (int id = 0; id < chargeNo; id++) {
 				int mowerX = chargePosition[id][0];
 				int mowerY = chargePosition[id][1];
 				// if a square contains both charge and mower, code = mowerID*10+100+CHARGE_CODE
 				// map[mowerX][mowerY] = id*10 + 100 + CHARGE_CODE;
-				map[mowerX][mowerY] = id + 5;
+				map[mowerX][mowerY] = id*10 + 100 + CHARGE_CODE;
 			}
 		}
 
@@ -137,10 +138,10 @@ public class InfoMap {
 
   	//a function to translate square integer to element string
   	public static String translateSquare(int code){
-  		if (code>100 && code%10 == CHARGE_CODE){ //mower + charge
+  		if (code>100 && code%10 == CHARGE_CODE){ //mower + charge, code = mowerID*10+100+CHARGE_CODE
   			int mowerID = (code - CHARGE_CODE -100)/10;
   			int mowerCode = mowerID + 5; //mowerCode start from 5 (id+5)
-  			return String.format("%s|%s", type.get(mowerCode), type.get(CHARGE_CODE));
+  			return String.format("%s-%s", type.get(mowerCode), type.get(CHARGE_CODE));
   		}
   		return type.get(code);
   	}
