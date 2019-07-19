@@ -1,5 +1,6 @@
 package com.example.mainpanel.back_end;
 
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -308,11 +309,12 @@ public class Mower {
 		// Since the mowerMaps is updating, at the beginning of the action, get the
 		// latest map, and the position of the mower;
 		// the map and the mower position is updated in the commchannel.
-
+		System.out.println(String.format("mower_%d", mowerID+1));
 		while(stallTurn > 0) {
 			stallTurn--;
 			trackAction = "stall";
-			return "stall"; 
+			System.out.println("stall,0");
+			return "stall,0"; 
 		}
 		mowerX = cc.mowerRelativeLocation[mowerID][0];
 		mowerY = cc.mowerRelativeLocation[mowerID][1];
