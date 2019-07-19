@@ -230,7 +230,7 @@ public class SimultaionRun {
 			if (i<7){
 				System.out.print(",");
 			} else {
-				System.out.print("/n");
+				System.out.println();
 			}
 			i++;
 		}
