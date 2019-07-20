@@ -129,7 +129,7 @@ public class SimultaionRun {
 
 			tokens = takeCommand.nextLine().split(DELIMITER);
 			numTurn = Integer.parseInt(tokens[0]); //line 9
-			total_grass = lawnWidth * lawnHeight;
+			total_grass = lawnWidth * lawnHeight - numCraters;
 			total_cut = numMowers;
 			lawnMap = new InfoMap(lawnWidth, lawnHeight, numMowers, mowerPosition, numCraters, craterLocation, true);
             CommunicationChannel.mowerList = mowerList;
