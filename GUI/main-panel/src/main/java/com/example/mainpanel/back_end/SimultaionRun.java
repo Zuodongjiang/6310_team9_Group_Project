@@ -149,8 +149,8 @@ public class SimultaionRun {
 	public String[] moveNext() {
 		if (pressStop) {
 			String[] re = new String[2];
-			re[0] = "Stop";
-			re[1] = "Simulation";
+			re[0] = "simulation";
+			re[1] = "stop";
 			return re;
 		}
 		String[] ret = new String[2];
@@ -383,7 +383,7 @@ public class SimultaionRun {
 	}
 	
 	public boolean checkStop() {
-		if (activeMowerCount == 0 || total_cut == total_grass || total_step == numTurn) {
+		if (activeMowerCount == 0 || total_cut == total_grass || total_step == numTurn || pressStop) {
 			return true;
 		}
 		return false;
