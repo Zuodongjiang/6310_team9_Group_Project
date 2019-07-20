@@ -42,7 +42,7 @@ public class CommunicationChannel {
 //	private final int GRASS_CODE = 1;
 //	private final int CRATER_CODE = 2;
 	private final int FENCE_CODE = 3;
-//	private final int CHARGE_CODE = 4;
+	private final int CHARGE_CODE = 4;
 //	private final int MOWER_CODE = 5;
 
 	// Add the list of mower here, and the size of the map. we need to access the
@@ -134,9 +134,13 @@ public class CommunicationChannel {
 				}
 			} else {
 				mowerMap[x][y] = grid_type;
-				if (grid_type >= 5) {
-					int secondMowerID = grid_type - 5;
-
+				if (grid_type >= 5) { //case mower square
+					int secondMowerID;
+					if (grid_type>100 && grid_type%10==CHARGE_CODE){ //mower+charge
+						secondMowerID = (grid_type - CHARGE_CODE - 100)/10;//if a square contains both charge and mower, code = mowerID*10+100+CHARGE_CODE						
+					} else {
+						secondMowerID = grid_type - 5;
+					}
 					// if(!mergedMap.get(mowerID).contains(secondMowerID)) {
 					int dx = x - mowerRelativeLocation[mowerID][0];
 					int dy = y - mowerRelativeLocation[mowerID][1];

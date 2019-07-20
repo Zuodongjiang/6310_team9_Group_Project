@@ -467,10 +467,12 @@ public class SimultaionRun {
 	
 	/***
 	public static void main(String[] args) {
-		String arg = "cs6310_a7_test8.txt";
-		SimultaionRun test = new SimultaionRun(arg);
-		test.renderLawn();
-		test.act();
+		String arg = "/Users/YuanZhong/Documents/Gatech/homework/6310 Software Architecture & Design/Assignment7/6310_team9_Group_Project/GUI/main-panel/src/main/java/com/example/mainpanel/test_cases/cs6310_a7_test2.txt";
+		FilePath testFile= new FilePath();
+		testFile.setFilePath(arg);
+		SimultaionRun test = new SimultaionRun(testFile);
+		//test.renderLawn();
+		//test.act();
 		// Use the following to see step by step motion, the lawn is updated upon each mower action. 
 //		Scanner userInput = new Scanner(System.in);
 //		for(int i = 0; i < 100; i++) {
@@ -478,7 +480,11 @@ public class SimultaionRun {
 //			test.moveNext();
 //			test.renderLawn();
 //		}
-		test.renderLawn();
+		//test.renderLawn();
+		for (int i=0; i<100; i++){
+			test.moveNext();
+		}
 	}
 	***/
+	
 }
