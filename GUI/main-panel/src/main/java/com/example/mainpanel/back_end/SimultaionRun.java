@@ -8,28 +8,28 @@ import java.util.Scanner;
 
 public class SimultaionRun {
 
-	
+
 	private static Mower[] mowerList;
 	private int[][] mowerPosition;
 	private InfoMap lawnMap;
 	private CommunicationChannel cc;
-	
+
 	//used for stopRun button on GUI
 	private boolean pressStop;
 
-	
-	
+
+
 	private HashMap<String, Integer> xDIR_MAP;
 	private HashMap<String, Integer> yDIR_MAP;
 	// type Enum: empty, grass, crate...
 
-	
+
 	private final int EMPTY_CODE = 0;
 	private final int GRASS_CODE = 1;
 	private final int CRATER_CODE = 2;
 	private final int FENCE_CODE = 3;
 	private final int CHARGE_CODE = 4;
-	
+
 	private int nextMower = 0;
 
 	private int total_cut = 0;
@@ -40,7 +40,7 @@ public class SimultaionRun {
 	private static int mowerCount = 0;
 	private int collision_delay;
 
-	
+
 
 	public SimultaionRun(FilePath filePath) {
 		xDIR_MAP = new HashMap<>();
@@ -62,7 +62,7 @@ public class SimultaionRun {
 		yDIR_MAP.put("southwest", -1);
 		yDIR_MAP.put("west", 0);
 		yDIR_MAP.put("northwest", 1);
-		
+
 		pressStop = false;
 		uploadStartingFile(filePath.getFilePath());
 	}
@@ -80,7 +80,7 @@ public class SimultaionRun {
 			int lawnWidth = Integer.parseInt(tokens[0]); //line 1
 			tokens = takeCommand.nextLine().split(DELIMITER);
 			int lawnHeight = Integer.parseInt(tokens[0]); //line 2
-			
+
 
 			// Initilize mower list
 			tokens = takeCommand.nextLine().split(DELIMITER);
@@ -94,11 +94,11 @@ public class SimultaionRun {
 			//collision delay
 			tokens = takeCommand.nextLine().split(DELIMITER);
 			collision_delay = Integer.parseInt(tokens[0]);  //line 4
-			
+
 			//energy capacity
 			tokens = takeCommand.nextLine().split(DELIMITER);
 			int energy_capacity = Integer.parseInt(tokens[0]);  //line 5
-			
+
 			mowerPosition = new int[numMowers][2];
 			for (int k = 0; k < numMowers; k++) {
 				tokens = takeCommand.nextLine().split(DELIMITER); //line 6
@@ -111,13 +111,13 @@ public class SimultaionRun {
 
 			}
 
-			// read in the crater information 
+			// read in the crater information
             tokens = takeCommand.nextLine().split(DELIMITER);
             int numCraters = Integer.parseInt(tokens[0]); //line 7
             int [][] craterLocation = new int [numCraters][2];
             if (numCraters==0){ //there might be no crater
             	craterLocation = null;
-            } else {	            
+            } else {
 	            for (int k = 0; k < numCraters; k++) {
 	                tokens = takeCommand.nextLine().split(DELIMITER); //line 8
 	                Integer craterX = Integer.parseInt(tokens[0]);
@@ -134,8 +134,8 @@ public class SimultaionRun {
 			lawnMap = new InfoMap(lawnWidth, lawnHeight, numMowers, mowerPosition, numCraters, craterLocation, true);
             CommunicationChannel.mowerList = mowerList;
 			takeCommand.close();
-			
-			
+
+
 			// renderLawn();
 			// scan();
 		} catch (Exception e) {
@@ -143,14 +143,14 @@ public class SimultaionRun {
 			System.out.println("");
 		}
 	}
-	
-	
+
+
 	// poll next available mower
 	public String[] moveNext() {
 		if (pressStop) {
 			String[] re = new String[2];
-			re[0] = "simulation";
-			re[1] = "stop";
+			re[0] = "Simulation";
+			re[1] = "Stop";
 			return re;
 		}
 		String[] ret = new String[2];
@@ -161,30 +161,30 @@ public class SimultaionRun {
 			nextMower++;
 			countTurn();
 		}
-	
+
 		if (!checkStop()) {
 			//if scan return 0
 			action = mowerList[nextMower].pollMowerForAction();
 			nextMower++;
 			countTurn();
-	
+
 		} else {
 			//stop
-			action = "stop";
+			action = "Stop";
 		}
-		
+
 		ret[0] = String.format("mower_%d", mower.mowerID+1);
 		ret[1] = action;
 		return ret;
 	}
-	
+
 	private void countTurn() {
 		if (nextMower >= mowerCount) {
 			total_step++;
 		}
 		nextMower = nextMower % mowerCount;
-	}	
-	
+	}
+
 	public MowerStates[] getMowerState() {
 		MowerStates[] allMowerStates = new MowerStates[mowerCount];
 		for (int i=0;i<mowerCount;i++){
@@ -195,16 +195,16 @@ public class SimultaionRun {
 		}
 		return allMowerStates;
 	}
-	
+
 	public InfoMap getLawnMap(){
 		return this.lawnMap;
 	}
-	
+
 	public Report generateReport(){
 		Report report = new Report(this.total_grass, this.total_cut, this.total_grass-this.total_cut, this.total_step);
 		return report;
 	}
-	
+
 	public void scan(int mowerID) {
 		System.out.println("scan");
 		int x_pos = mowerPosition[mowerID][0];
@@ -212,7 +212,7 @@ public class SimultaionRun {
 //		int dx = mower.mowerX - x_pos;
 //		int dy = mower.mowerY - y_pos;
 		int[] res = new int[8];
-	
+
 
 		int[][] neis = new int[][] { { x_pos, y_pos + 1 }, { x_pos + 1, y_pos + 1 }, { x_pos + 1, y_pos },
 				{ x_pos + 1, y_pos - 1 }, { x_pos, y_pos - 1 }, { x_pos - 1, y_pos - 1 }, { x_pos - 1, y_pos },
@@ -226,7 +226,7 @@ public class SimultaionRun {
 
 			} else {
 				int code = lawnMap.checkSquare(nei[0], nei[1]);
-				res[i]=code;				
+				res[i]=code;
 				square = InfoMap.translateSquare(code);
 			}
 			System.out.print(square);
@@ -238,8 +238,8 @@ public class SimultaionRun {
 			i++;
 		}
 		cc.updateMowerMap(mowerID, res);
-		
-		
+
+
 	}
 
 	/***
@@ -249,9 +249,9 @@ public class SimultaionRun {
 	***/
 
 	public boolean validateMove(int mowerID, int dx, int dy) { //validate move one step
-		
-	
-		
+
+
+
 		int x_pos = mowerPosition[mowerID][0];
 		int y_pos = mowerPosition[mowerID][1];
 		int squareX = x_pos + dx;
@@ -275,11 +275,11 @@ public class SimultaionRun {
 				charge(mowerID);
 				updatePosition(mowerID, dx, dy);
 				return true;
-			default://if square contains another mower 
+			default://if square contains another mower
 				Mower mower = mowerList[mowerID];
 				mower.stallTurn = this.collision_delay;
 				System.out.println(String.format("stall,%d", mower.getMoveDistance()));
-				return false; 
+				return false;
 			}
 		}
 
@@ -289,7 +289,7 @@ public class SimultaionRun {
 		activeMowerCount--;
 		Mower mower = mowerList[mowerID];
 		mower.enable = false;
-		
+
 		//remove from lawn map
 		int X = this.mowerPosition[mowerID][0];
 		int Y = this.mowerPosition[mowerID][1];
@@ -301,7 +301,7 @@ public class SimultaionRun {
 			newCode = EMPTY_CODE;
 		}
 		lawnMap.updateMapSquare(X, Y, newCode);
-		
+
 		//remove from mower map
 		int x = mower.mowerX;
 		int y = mower.mowerY;
@@ -323,12 +323,12 @@ public class SimultaionRun {
 		int y_pos = mowerPosition[mowerID][1];
 
 		InfoMap mowerMap = cc.getMap(mowerID);
-		
-		
+
+
 		//move out
 		int x_mower = cc.mowerRelativeLocation[mowerID][0];
 		int y_mower = cc.mowerRelativeLocation[mowerID][1];
-		int exSquare = lawnMap.checkSquare(x_pos, y_pos); 
+		int exSquare = lawnMap.checkSquare(x_pos, y_pos);
 		if (exSquare>100 && exSquare%10==CHARGE_CODE) { //move out from charge pad
 			lawnMap.updateMapSquare(x_pos, y_pos, CHARGE_CODE);
 			mowerMap.updateMapSquare(x_mower, y_mower, CHARGE_CODE);
@@ -336,7 +336,7 @@ public class SimultaionRun {
 			lawnMap.updateMapSquare(x_pos, y_pos, EMPTY_CODE);
 			mowerMap.updateMapSquare(x_mower, y_mower, EMPTY_CODE);
 		}
-		
+
 
 		// go to the new position
 		x_pos += dx;
@@ -349,7 +349,7 @@ public class SimultaionRun {
 		cc.mowerRelativeLocation[mowerID][0] = x_mower;
 		cc.mowerRelativeLocation[mowerID][1] = y_mower;
 		int square = lawnMap.checkSquare(x_pos, y_pos);
-		
+
 		if (square == GRASS_CODE || square == EMPTY_CODE) {
 			if (square == GRASS_CODE) total_cut++;
 			lawnMap.updateMapSquare(x_pos, y_pos, mowerID + 5);
@@ -357,7 +357,7 @@ public class SimultaionRun {
 		}
 		// check energy
 		if (square == CHARGE_CODE) { //move into charge pad
-			int code = mowerID*10+100+CHARGE_CODE; 
+			int code = mowerID*10+100+CHARGE_CODE;
 			lawnMap.updateMapSquare(x_pos, y_pos, code);
 			mowerMap.updateMapSquare(x_mower, y_mower, code);
 		}
@@ -368,20 +368,20 @@ public class SimultaionRun {
 		}
 
 	}
-	
+
 	public void act(){
 		while(!checkStop() && !pressStop){//should fast forward be interrupted by press stop button?
 			moveNext();
 	//		mowerList[nextMower].pollMowerForAction();
 	//		nextMower = (nextMower + 1) % mowerCount;
-		}		
+		}
 	}
-	 
+
 	public void stopRun(){
 		pressStop = true;
 		System.out.println(String.format("%d,%d,%d,%d", lawnMap.getLawnWidth()*lawnMap.getLawnHeight(),total_grass,total_cut,numTurn));
 	}
-	
+
 	public boolean checkStop() {
 		if (activeMowerCount == 0 || total_cut == total_grass || total_step == numTurn || pressStop) {
 			return true;
@@ -451,7 +451,7 @@ public class SimultaionRun {
 		// System.out.println("dir: " + mowerDirection);
 		System.out.println("");
 	}
-	
+
 	public void testLoad(String testFileName) {
 		Scanner sc;
 		try {
@@ -463,10 +463,10 @@ public class SimultaionRun {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		
+
 	}
-	
-	
+
+
 	public static void main(String[] args) {
 		String arg = "/Users/YuanZhong/Documents/Gatech/homework/6310 Software Architecture & Design/Assignment7/6310_team9_Group_Project/GUI/main-panel/src/main/java/com/example/mainpanel/test_cases/cs6310_a7_test2.txt";
 		FilePath testFile= new FilePath();
@@ -474,7 +474,7 @@ public class SimultaionRun {
 		SimultaionRun test = new SimultaionRun(testFile);
 		//test.renderLawn();
 		//test.act();
-		// Use the following to see step by step motion, the lawn is updated upon each mower action. 
+		// Use the following to see step by step motion, the lawn is updated upon each mower action.
 //		Scanner userInput = new Scanner(System.in);
 //		for(int i = 0; i < 100; i++) {
 //			String input = userInput.nextLine();
@@ -487,5 +487,5 @@ public class SimultaionRun {
 		}
 	}
 	***/
-	
+
 }
