@@ -383,7 +383,7 @@ public class SimultaionRun {
 	private boolean isChargePad(int x, int y) {
 		// TO be implemented
 		int square_code = lawnMap.checkSquare(x, y);
-		if (square_code==CHARGE_CODE || (square_code>100 && square_code%10==CHARGE_CODE)){
+		if (square_code==CHARGE_CODE){
 			return true;
 		}
 	
