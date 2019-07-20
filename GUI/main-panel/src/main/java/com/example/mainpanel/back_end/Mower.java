@@ -175,10 +175,9 @@ public class Mower {
 		int dx = xDIR_MAP.get(mowerDirection);
 		int dy = yDIR_MAP.get(mowerDirection);
 		for (int i=0;i<distance;i++){
-			if (sim.validateMove(mowerID, dx, dy)){
-				curEnergy-=2; //move 1/2 step spend 2 energy
-			}
-		}		
+			sim.validateMove(mowerID, dx, dy);
+		}	
+		curEnergy-=2; //move 1/2 step spend 2 energy
 		//added redirection after move
 		int dir_index = canCutAfterTurning();
 		if (dir_index >=0 ){
