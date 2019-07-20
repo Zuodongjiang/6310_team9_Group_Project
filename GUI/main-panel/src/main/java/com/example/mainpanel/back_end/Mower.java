@@ -1,5 +1,6 @@
 package com.example.mainpanel.back_end;
 
+
 import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,7 +26,7 @@ public class Mower {
 	}
 	public int mowerID = 0;
 	public static SimultaionRun sim;
-	static CommunicationChannel cc;
+	public static CommunicationChannel cc;
 
 	// discovered: a list of mower that the mower can see, the Point records the
 	// relative position of these mowers
@@ -110,6 +111,7 @@ public class Mower {
 	
 	
 	private void scan(int mowerID) {
+		curEnergy--;
 		sim.scan(mowerID);
 		/***
 		for (Integer i: scannedInfo){
@@ -142,29 +144,41 @@ public class Mower {
 
 	// canCut(): check if mower can cut grass by moving at the current direction
 	private boolean canCut() {
-		if (!validMove()) {
+		if (validMove()==0) {
 			return false;
 		}
 		InfoMap mowerMap = cc.getMap(mowerID);
-		return mowerMap.checkSquare(mowerX + xDIR_MAP.get(mowerDirection), mowerY + yDIR_MAP.get(mowerDirection)) == 1;
+		return mowerMap.checkSquare(mowerX + xDIR_MAP.get(mowerDirection), mowerY + yDIR_MAP.get(mowerDirection)) == GRASS_CODE;
 	}
 
-	// make sure it will not move to unknow area
-	private boolean validMove() {
+	// return valid move distance
+	private int validMove() {
 		int a = mowerX + xDIR_MAP.get(mowerDirection);
 		int b = mowerY + yDIR_MAP.get(mowerDirection);
 		InfoMap mowerMap = cc.getMap(mowerID);
 		int square = mowerMap.checkSquare(a, b);
-		return square == EMPTY_CODE || square == GRASS_CODE || square == CHARGE_CODE;
+		int ret = 0;
+		if (square == EMPTY_CODE || square == GRASS_CODE || square == CHARGE_CODE){
+			ret = 1;	
+		}
+		int square2 = mowerMap.checkSquare(a+xDIR_MAP.get(mowerDirection), b+yDIR_MAP.get(mowerDirection));
+		if ((square2 == EMPTY_CODE || square2 == GRASS_CODE || square2 == CHARGE_CODE) && ret==1){
+			ret = 2;
+		}
+		return ret;
 	}
 
 	// move() : mover the mower, if the mower hit the crate or the fence, make
 	// crashed = true and return, otherwise, generate the motion.
 
-	private void move() {
+	private void move(int distance) { 
 		int dx = xDIR_MAP.get(mowerDirection);
 		int dy = yDIR_MAP.get(mowerDirection);
-		sim.validateMove(mowerID, dx, dy);
+		for (int i=0;i<distance;i++){
+			if (sim.validateMove(mowerID, dx, dy)){
+				curEnergy-=2; //move 1/2 step spend 2 energy
+			}
+		}		
 		//added redirection after move
 		int dir_index = canCutAfterTurning();
 		if (dir_index >=0 ){
@@ -172,12 +186,13 @@ public class Mower {
 			trackNewDirection = mowerDirection;
 		}
 		trackAction = "move";
-		trackMoveDistance = 1;
+		trackMoveDistance = distance;
 		trackNewDirection = mowerDirection;
 		displayActionAndResponses();
 	}
 
-	private void turning(String dir) {
+	private void turning(String dir) { //only turn
+		this.curEnergy--; //move 0 step cost 1 energy
 		trackAction = "move";
 		trackMoveDistance = 0;
 		mowerDirection = dir;
@@ -325,7 +340,8 @@ public class Mower {
 		}
 		// check if can cut without turning
 		if (canCut()) {
-			move();
+			trackMoveDistance = validMove();
+			move(trackMoveDistance);
 			return String.format("move,%d,%s",trackMoveDistance,trackNewDirection);
 		}
 		// check if can cut after turning
@@ -339,7 +355,8 @@ public class Mower {
 		if (path.size() > 0) {
 			String dir = path.get(0);
 			if (dir == mowerDirection) {
-				move();
+				trackMoveDistance = validMove();
+				move(trackMoveDistance);
 				// path.remove(0);
 			} else {
 				turning(dir);
@@ -379,6 +396,7 @@ public class Mower {
 		return this.trackMoveDistance;
 	}
 	
+	/*** only for test
 	private static void renderHorizontalBar(int size) {
 		System.out.print(" ");
 		for (int k = 0; k < size; k++) {
@@ -387,6 +405,7 @@ public class Mower {
 		System.out.println("");
 	}
 
+	
 	public static void renderLawn(int[][] lawnInfo) {
 		int i, j;
 		int lawnWidth = 35;
@@ -444,5 +463,6 @@ public class Mower {
 		// System.out.println("dir: " + mowerDirection);
 		System.out.println("");
 	}
+	***/
 
 }

@@ -147,8 +147,8 @@ public class CommunicationChannel {
 
 					// check: at least one of them is not in full Map;
 					if (mowerMaps[mowerID].map != mowerMaps[secondMowerID].map) {
-						System.out.println(mowerRelativeLocation[mowerID][0] +"ssssssss" +mowerRelativeLocation[mowerID][1]);
-						System.out.println(secondMowerID + " relative pos: " + dx + " " + dy);
+					//	System.out.println(mowerRelativeLocation[mowerID][0] +"ssssssss" +mowerRelativeLocation[mowerID][1]);
+					//	System.out.println(secondMowerID + " relative pos: " + dx + " " + dy);
 						mergePartialMowerMap(mowerID, secondMowerID, dx, dy);
 
 					}

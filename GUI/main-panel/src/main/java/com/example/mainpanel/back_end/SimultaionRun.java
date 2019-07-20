@@ -147,6 +147,12 @@ public class SimultaionRun {
 	
 	// poll next available mower
 	public String[] moveNext() {
+		if (pressStop) {
+			String[] re = new String[2];
+			re[0] = "Stop";
+			re[1] = "Simulation";
+			return re;
+		}
 		String[] ret = new String[2];
 		String action;
 		Mower mower = mowerList[nextMower];
@@ -201,8 +207,6 @@ public class SimultaionRun {
 	
 	public void scan(int mowerID) {
 		System.out.println("scan");
-		Mower mower = mowerList[mowerID];
-		mower.curEnergy--;
 		int x_pos = mowerPosition[mowerID][0];
 		int y_pos = mowerPosition[mowerID][1];
 //		int dx = mower.mowerX - x_pos;
@@ -244,13 +248,16 @@ public class SimultaionRun {
 	}
 	***/
 
-	public boolean validateMove(int mowerID, int dx, int dy) {
-		System.out.println("move");
-		mowerList[mowerID].curEnergy--;
+	public boolean validateMove(int mowerID, int dx, int dy) { //validate move one step
+		
+	
+		
 		int x_pos = mowerPosition[mowerID][0];
 		int y_pos = mowerPosition[mowerID][1];
-		int square = lawnMap.checkSquare(x_pos + dx, y_pos + dy);
-		if (x_pos + dx < 0 || x_pos + dx >= lawnMap.getLawnWidth() || y_pos + dy < 0 || y_pos + dy >= lawnMap.getLawnHeight()) {
+		int squareX = x_pos + dx;
+		int squareY = y_pos + dy;
+		int square = lawnMap.checkSquare(squareX, squareY);
+		if (squareX < 0 || squareX >= lawnMap.getLawnWidth() || squareY < 0 || squareY >= lawnMap.getLawnHeight()) {
 			removeMower(mowerID);//crashed
 			return false;
 		} else {
@@ -318,10 +325,11 @@ public class SimultaionRun {
 		InfoMap mowerMap = cc.getMap(mowerID);
 		
 		
-		
+		//move out
 		int x_mower = cc.mowerRelativeLocation[mowerID][0];
 		int y_mower = cc.mowerRelativeLocation[mowerID][1];
-		if (isChargePad(x_pos, y_pos)) {
+		int exSquare = lawnMap.checkSquare(x_pos, y_pos); 
+		if (exSquare>100 && exSquare%10==CHARGE_CODE) { //move out from charge pad
 			lawnMap.updateMapSquare(x_pos, y_pos, CHARGE_CODE);
 			mowerMap.updateMapSquare(x_mower, y_mower, CHARGE_CODE);
 		} else {
@@ -340,15 +348,20 @@ public class SimultaionRun {
 		mowerPosition[mowerID][1] = y_pos;
 		cc.mowerRelativeLocation[mowerID][0] = x_mower;
 		cc.mowerRelativeLocation[mowerID][1] = y_mower;
-
-		// cut grass
-		if (lawnMap.checkSquare(x_pos, y_pos) == GRASS_CODE) {
-			total_cut++;
+		int square = lawnMap.checkSquare(x_pos, y_pos);
+		
+		if (square == GRASS_CODE || square == EMPTY_CODE) {
+			if (square == GRASS_CODE) total_cut++;
+			lawnMap.updateMapSquare(x_pos, y_pos, mowerID + 5);
+			mowerMap.updateMapSquare(x_mower, y_mower, mowerID + 5);
 		}
-
+		// check energy
+		if (square == CHARGE_CODE) { //move into charge pad
+			int code = mowerID*10+100+CHARGE_CODE; 
+			lawnMap.updateMapSquare(x_pos, y_pos, code);
+			mowerMap.updateMapSquare(x_mower, y_mower, code);
+		}
 		// run out of energy
-		lawnMap.updateMapSquare(x_pos, y_pos, mowerID + 5);
-		mowerMap.updateMapSquare(x_mower, y_mower, mowerID + 5);
 		if (mowerList[mowerID].curEnergy == 0) {
 			mowerList[mowerID].enable = false;
 			activeMowerCount--;
@@ -362,38 +375,26 @@ public class SimultaionRun {
 	//		mowerList[nextMower].pollMowerForAction();
 	//		nextMower = (nextMower + 1) % mowerCount;
 		}		
-		System.out.println(String.format("%d,%d,%d,%d", lawnMap.getLawnWidth()*lawnMap.getLawnHeight(),total_grass,total_cut,numTurn));
 	}
 	 
 	public void stopRun(){
 		pressStop = true;
+		System.out.println(String.format("%d,%d,%d,%d", lawnMap.getLawnWidth()*lawnMap.getLawnHeight(),total_grass,total_cut,numTurn));
 	}
 	
 	public boolean checkStop() {
 		if (activeMowerCount == 0 || total_cut == total_grass || total_step == numTurn) {
-			System.out.println("mowerCount" + activeMowerCount );
-			System.out.println("mowerCount" + numTurn );
 			return true;
 		}
 		return false;
 	}
 
-	
-	
-	private boolean isChargePad(int x, int y) {
-		// TO be implemented
-		int square_code = lawnMap.checkSquare(x, y);
-		if (square_code==CHARGE_CODE){
-			return true;
-		}
-	
-		return false;
-	}
 
 	private void charge(int mowerID) {
 		mowerList[mowerID].curEnergy = mowerList[mowerID].maxEnergy;
 	}
 
+	/***test section
 	private void renderHorizontalBar(int size) {
 		System.out.print(" ");
 		for (int k = 0; k < size; k++) {
@@ -465,7 +466,7 @@ public class SimultaionRun {
 		
 	}
 	
-	/***
+	
 	public static void main(String[] args) {
 		String arg = "/Users/YuanZhong/Documents/Gatech/homework/6310 Software Architecture & Design/Assignment7/6310_team9_Group_Project/GUI/main-panel/src/main/java/com/example/mainpanel/test_cases/cs6310_a7_test2.txt";
 		FilePath testFile= new FilePath();
