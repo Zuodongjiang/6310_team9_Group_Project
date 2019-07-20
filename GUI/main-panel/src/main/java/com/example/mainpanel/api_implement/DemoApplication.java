@@ -56,6 +56,7 @@ public class DemoApplication {
 	// stop: 1. terminate application 2. map 3. report 4. Mowers States
 	@DeleteMapping(value = "/stop")
 	public String stopRun() throws JsonProcessingException {
+		String[] mowerAction = new String[2];
 		// 1. terminate application
 		monitorSim.stopRun();
 
@@ -73,7 +74,9 @@ public class DemoApplication {
 		String mapAsString = objectMapper.writeValueAsString(lawnMap);
 		String reportAsString = objectMapper.writeValueAsString(report);
 		String stateAsString = objectMapper.writeValueAsString(mowerStates);
-		return "{\"map\":" + mapAsString + ", \"report\":" + reportAsString + ", \"mowerStates\":" + stateAsString + "}";
+		String mowerAsString = objectMapper.writeValueAsString(mowerAction);
+
+		return "{\"map\":" + mapAsString + ", \"report\":" + reportAsString + ", \"mowerStates\":" + stateAsString + ", \"mowerAction\":" + mowerAsString + "}";
 	}
 
 	// next: 1. move mower to next 2. map 3. report 4. Mowers States
@@ -101,27 +104,4 @@ public class DemoApplication {
 
 		return "{\"map\":" + mapAsString + ", \"report\":" + reportAsString + ", \"mowerStates\":" + stateAsString + ", \"mowerAction\":" + mowerAsString + "}";
 	}
-/*
-	// fast-forward: 1. move mower fast-forward 2. update map 3. report 4.Mowers States
-	@PatchMapping(value = "/fast-forward")
-	public String fastForwardRun() throws JsonProcessingException {
-		// 1. move mower fast-forward
-		monitorSim.act();
-
-		// 2. update map
-		lawnMap = monitorSim.getLawnMap();
-
-		// 3. report
-		report = monitorSim.generateReport();
-
-		// 4.Mowers States
-		mowerStates = monitorSim.getMowerState();
-
-		// object --> JSON
-		ObjectMapper objectMapper = new ObjectMapper();
-		String mapAsString = objectMapper.writeValueAsString(lawnMap);
-		String reportAsString = objectMapper.writeValueAsString(report);
-		String stateAsString = objectMapper.writeValueAsString(mowerStates);
-		return "{\"map\":" + mapAsString + ", \"report\":" + reportAsString + ", \"mowerStates\":" + stateAsString + "}";
-	} */
 }

@@ -2,9 +2,13 @@
 const React = require('react');
 const ReactDOM = require('react-dom');
 const client = require('./client');
-// const rp = require('request-promise');
-// end::vars[]
+const axios = require('axios');
 
+// end::vars[]
+// click fast-forward button and send PATCH request to server, get result from server
+function sleep(ms = 0) {
+    return new Promise(r => setTimeout(r, ms));
+}
 // tag::app[]
 class App extends React.Component {
 
@@ -13,7 +17,7 @@ class App extends React.Component {
         this.state = { value: '', hidePathForm: '', hideSimulation: 'hidden', setting: { mowerStates: [], report: {}, map: { lawnStatus: [[]] }, mowerAction: []}};
         this.toggleButtonState = this.toggleButtonState.bind(this);
         this.toggleButtonStateStop = this.toggleButtonStateStop.bind(this);
-        // this.toggleButtonStateRun = this.toggleButtonStateRun.bind(this);
+        this.toggleButtonStateRun = this.toggleButtonStateRun.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -33,43 +37,46 @@ class App extends React.Component {
 
     // click next button and send PATCH request to server, get result from server
     toggleButtonState() {
-        if (this.state.setting.mowerAction[1] == "stop") {
+        if (this.state.setting.mowerAction[1] === "Stop") {
             alert('Simulation Terminated!');
         } else {
             client({method: 'PATCH', path: '/next'}).done(response => {
             this.setState({setting: response.entity});
             mowerID = this.state.setting.mowerAction[0];
             mowerAction = this.state.setting.mowerAction[1];
-            alert(mowerID + "\n" + mowerAction);
-            })
-        }
+            if (mowerAction != "Stop") {
+                alert(mowerID + "\n" + mowerAction);
+            } else {
+                alert('Simulation Terminated!');
+            }
+        })}
     }
 
-    // click stop button and send DELET request to server, get result from server
+    //click stop button and send DELET request to server, get result from server
     toggleButtonStateStop() {
         client({method: 'DELETE', path: '/stop'}).done(response => {
             this.setState({setting: response.entity});
-            alert('Simulation Terminated');
+            alert('Simulation Terminated!');
         });
     }
 
-    //click fast-forward button and send PATCH request to server, get result from server
-    // async toggleButtonStateRun() {
-    //     while (this.state.setting.mowerAction[1] != "stop") {
-    //         try {
-    //             var options = {
-    //                 method: 'PATCH',
-    //                 uri: 'http://127.0.0.1:8080/next',
-    //                 json: true // Automatically stringifies the body to JSON
-    //             }
-    //             const promise = await rp(options);
-    //             this.setState({setting: promise});
-    //             } catch (e){
-    //                 console.log(e);
-    //             }
-    //     }
-    //     alert('Simulation Terminated');
-    // }
+    // click fast-forward button and send PATCH request to server, get result from server
+    async toggleButtonStateRun() {
+        while (this.state.setting.mowerAction[1] != "Stop") {
+            try {
+                const response = await axios({
+                    method: 'PATCH',
+                    url: 'http://127.0.0.1:8080/next',
+                });
+                this.setState({setting: response.data});
+                await sleep(350);
+            } catch (e){
+                console.log(e);
+            }
+        }
+        alert('Simulation Terminated!');
+    }
+
 
 
     // render html
