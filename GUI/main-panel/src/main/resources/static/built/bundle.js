@@ -30277,9 +30277,6 @@ var __WEBPACK_AMD_DEFINE_RESULT__;!(__WEBPACK_AMD_DEFINE_RESULT__ = (function (r
 /*! no static exports found */
 /***/ (function(module, exports, __webpack_require__) {
 
-"use strict";
- // tag::vars[]
-
 function _typeof(obj) { if (typeof Symbol === "function" && typeof Symbol.iterator === "symbol") { _typeof = function _typeof(obj) { return typeof obj; }; } else { _typeof = function _typeof(obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; }; } return _typeof(obj); }
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
@@ -30298,6 +30295,7 @@ function _inherits(subClass, superClass) { if (typeof superClass !== "function" 
 
 function _setPrototypeOf(o, p) { _setPrototypeOf = Object.setPrototypeOf || function _setPrototypeOf(o, p) { o.__proto__ = p; return o; }; return _setPrototypeOf(o, p); }
 
+// tag::vars[]
 var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
@@ -30377,23 +30375,22 @@ function (_React$Component) {
     value: function toggleButtonState() {
       var _this3 = this;
 
-      client({
-        method: 'PATCH',
-        path: '/next'
-      }).done(function (response) {
-        _this3.setState({
-          setting: response.entity
-        });
+      if (this.state.setting.mowerAction[1] == "stop") {
+        alert('Simulation Terminated!');
+      } else {
+        client({
+          method: 'PATCH',
+          path: '/next'
+        }).done(function (response) {
+          _this3.setState({
+            setting: response.entity
+          });
 
-        var mowerID = _this3.state.setting.mowerAction[0];
-        var mowerAction = _this3.state.setting.mowerAction[1];
-
-        if (mowerAction == "stop") {
-          alert('Simulation Terminated!');
-        } else {
+          mowerID = _this3.state.setting.mowerAction[0];
+          mowerAction = _this3.state.setting.mowerAction[1];
           alert(mowerID + "\n" + mowerAction);
-        }
-      });
+        });
+      }
     } // click stop button and send DELET request to server, get result from server
 
   }, {

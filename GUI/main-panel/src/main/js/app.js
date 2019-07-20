@@ -1,5 +1,3 @@
-'use strict';
-
 // tag::vars[]
 const React = require('react');
 const ReactDOM = require('react-dom');
@@ -35,16 +33,16 @@ class App extends React.Component {
 
     // click next button and send PATCH request to server, get result from server
     toggleButtonState() {
-        client({method: 'PATCH', path: '/next'}).done(response => {
+        if (this.state.setting.mowerAction[1] == "stop") {
+            alert('Simulation Terminated!');
+        } else {
+            client({method: 'PATCH', path: '/next'}).done(response => {
             this.setState({setting: response.entity});
-            var mowerID = this.state.setting.mowerAction[0];
-            var mowerAction = this.state.setting.mowerAction[1];
-            if (mowerAction == "stop") {
-                alert('Simulation Terminated!');
-            } else {
-                alert(mowerID + "\n" + mowerAction);
-            }
-        });
+            mowerID = this.state.setting.mowerAction[0];
+            mowerAction = this.state.setting.mowerAction[1];
+            alert(mowerID + "\n" + mowerAction);
+            })
+        }
     }
 
     // click stop button and send DELET request to server, get result from server
