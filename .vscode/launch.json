@@ -1,0 +1,11 @@
+{
+    "configurations": [
+        {
+            "type": "java",
+            "name": "CodeLens (Launch) - SimultaionRun",
+            "request": "launch",
+            "mainClass": "com.example.mainpanel.back_end.SimultaionRun",
+            "projectName": "main-panel"
+        }
+    ]
+}

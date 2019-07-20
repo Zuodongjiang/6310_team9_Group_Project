@@ -4,6 +4,7 @@
 const React = require('react');
 const ReactDOM = require('react-dom');
 const client = require('./client');
+// const rp = require('request-promise');
 // end::vars[]
 
 // tag::app[]
@@ -11,10 +12,10 @@ class App extends React.Component {
 
 	constructor(props) {
 		super(props);
-        this.state = { value: '', hidePathForm: '', hideSimulation: 'hidden', setting: { mowerStates: [], report: {}, map: { lawnStatus: [[]] }, mowerID: ''}};
+        this.state = { value: '', hidePathForm: '', hideSimulation: 'hidden', setting: { mowerStates: [], report: {}, map: { lawnStatus: [[]] }, mowerAction: []}};
         this.toggleButtonState = this.toggleButtonState.bind(this);
         this.toggleButtonStateStop = this.toggleButtonStateStop.bind(this);
-        this.toggleButtonStateRun = this.toggleButtonStateRun.bind(this);
+        // this.toggleButtonStateRun = this.toggleButtonStateRun.bind(this);
         this.handleChange = this.handleChange.bind(this);
         this.handleSubmit = this.handleSubmit.bind(this);
     }
@@ -36,27 +37,41 @@ class App extends React.Component {
     toggleButtonState() {
         client({method: 'PATCH', path: '/next'}).done(response => {
             this.setState({setting: response.entity});
+            var mowerID = this.state.setting.mowerAction[0];
+            var mowerAction = this.state.setting.mowerAction[1];
+            if (mowerAction == "stop") {
+                alert('Simulation Terminated!');
+            } else {
+                alert(mowerID + "\n" + mowerAction);
+            }
         });
-        if (this.state.setting.mowerID == -1) {
-            alert('Simulation Stoped, Reset Now');
-        }
     }
 
     // click stop button and send DELET request to server, get result from server
     toggleButtonStateStop() {
         client({method: 'DELETE', path: '/stop'}).done(response => {
             this.setState({setting: response.entity});
+            alert('Simulation Terminated');
         });
-        //alert('Simulation Stoped, Reset Now');
     }
 
-    // click fast-forward button and send PATCH request to server, get result from server
-    toggleButtonStateRun() {
-        client({method: 'PATCH', path: '/fast-forward'}).done(response => {
-            this.setState({setting: response.entity});
-        });
-        //alert('Simulation Stoped, Reset Now');
-    }
+    //click fast-forward button and send PATCH request to server, get result from server
+    // async toggleButtonStateRun() {
+    //     while (this.state.setting.mowerAction[1] != "stop") {
+    //         try {
+    //             var options = {
+    //                 method: 'PATCH',
+    //                 uri: 'http://127.0.0.1:8080/next',
+    //                 json: true // Automatically stringifies the body to JSON
+    //             }
+    //             const promise = await rp(options);
+    //             this.setState({setting: promise});
+    //             } catch (e){
+    //                 console.log(e);
+    //             }
+    //     }
+    //     alert('Simulation Terminated');
+    // }
 
 
     // render html
@@ -74,8 +89,9 @@ class App extends React.Component {
                                 <form onSubmit={this.handleSubmit}>
                                     <label>
                                         File Path:
-                                        <input type="text" value={this.state.value} onChange={this.handleChange} />
+                                        <input size = "60" type="text" value={this.state.value} onChange={this.handleChange} />
                                     </label>
+                                    <h6>(Please input full path of a test file)</h6>
                                     <div class="row col-md-12">
                                         <input type="submit" value="Submit" />
                                     </div>
@@ -91,10 +107,10 @@ class App extends React.Component {
                         </div>
                         <div class="row jd-flex justify-content-between">
                             <div>
-                                <button onClick={this.toggleButtonState}> Next Step </button>
+                                <button onClick={this.toggleButtonState}> Next</button>
                             </div>
                             <div>
-                                <button onClick={this.toggleButtonStateStop}>Stop & Restart</button>
+                                <button onClick={this.toggleButtonStateStop}>Stop</button>
                             </div>
                             <div>
                                 <button onClick={this.toggleButtonStateRun}>Fast-Forward</button>
@@ -106,7 +122,6 @@ class App extends React.Component {
                             <section class="float-left">
                                 <Report report={this.state.setting.report}/>
                                 <MowerList mowers={this.state.setting.mowerStates}
-                                        mowerID={this.state.setting.mowerID}
                                 />
                             </section>
                             <section class="float-right">
@@ -171,7 +186,6 @@ class MowerList extends React.Component{
 		const mowers = this.props.mowers.map(mower =>
 			<Mower mower={mower}
             />);
-        var mowerID = this.props.mowerID;
 
 		return (
             <div>
@@ -205,7 +219,6 @@ class MowerList extends React.Component{
 class Mower extends React.Component{
 	render() {
         // TODO: highlight row
-        var mowerID = this.props.mowerID;
         //var mower_id = this.props.mower.mower_id;
         // var isColored = Boolean(mowerID == mower_id);
 		return (

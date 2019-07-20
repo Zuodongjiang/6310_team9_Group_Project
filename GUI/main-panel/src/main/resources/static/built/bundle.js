@@ -30302,7 +30302,8 @@ var React = __webpack_require__(/*! react */ "./node_modules/react/index.js");
 
 var ReactDOM = __webpack_require__(/*! react-dom */ "./node_modules/react-dom/index.js");
 
-var client = __webpack_require__(/*! ./client */ "./src/main/js/client.js"); // end::vars[]
+var client = __webpack_require__(/*! ./client */ "./src/main/js/client.js"); // const rp = require('request-promise');
+// end::vars[]
 // tag::app[]
 
 
@@ -30327,12 +30328,12 @@ function (_React$Component) {
         map: {
           lawnStatus: [[]]
         },
-        mowerID: ''
+        mowerAction: []
       }
     };
     _this.toggleButtonState = _this.toggleButtonState.bind(_assertThisInitialized(_this));
-    _this.toggleButtonStateStop = _this.toggleButtonStateStop.bind(_assertThisInitialized(_this));
-    _this.toggleButtonStateRun = _this.toggleButtonStateRun.bind(_assertThisInitialized(_this));
+    _this.toggleButtonStateStop = _this.toggleButtonStateStop.bind(_assertThisInitialized(_this)); // this.toggleButtonStateRun = this.toggleButtonStateRun.bind(this);
+
     _this.handleChange = _this.handleChange.bind(_assertThisInitialized(_this));
     _this.handleSubmit = _this.handleSubmit.bind(_assertThisInitialized(_this));
     return _this;
@@ -30383,11 +30384,16 @@ function (_React$Component) {
         _this3.setState({
           setting: response.entity
         });
-      });
 
-      if (this.state.setting.mowerID == -1) {
-        alert('Simulation Stoped, Reset Now');
-      }
+        var mowerID = _this3.state.setting.mowerAction[0];
+        var mowerAction = _this3.state.setting.mowerAction[1];
+
+        if (mowerAction == "stop") {
+          alert('Simulation Terminated!');
+        } else {
+          alert(mowerID + "\n" + mowerAction);
+        }
+      });
     } // click stop button and send DELET request to server, get result from server
 
   }, {
@@ -30402,23 +30408,27 @@ function (_React$Component) {
         _this4.setState({
           setting: response.entity
         });
-      }); //alert('Simulation Stoped, Reset Now');
-    } // click fast-forward button and send PATCH request to server, get result from server
 
-  }, {
-    key: "toggleButtonStateRun",
-    value: function toggleButtonStateRun() {
-      var _this5 = this;
-
-      client({
-        method: 'PATCH',
-        path: '/fast-forward'
-      }).done(function (response) {
-        _this5.setState({
-          setting: response.entity
-        });
-      }); //alert('Simulation Stoped, Reset Now');
-    } // render html
+        alert('Simulation Terminated');
+      });
+    } //click fast-forward button and send PATCH request to server, get result from server
+    // async toggleButtonStateRun() {
+    //     while (this.state.setting.mowerAction[1] != "stop") {
+    //         try {
+    //             var options = {
+    //                 method: 'PATCH',
+    //                 uri: 'http://127.0.0.1:8080/next',
+    //                 json: true // Automatically stringifies the body to JSON
+    //             }
+    //             const promise = await rp(options);
+    //             this.setState({setting: promise});
+    //             } catch (e){
+    //                 console.log(e);
+    //             }
+    //     }
+    //     alert('Simulation Terminated');
+    // }
+    // render html
 
   }, {
     key: "render",
@@ -30438,10 +30448,11 @@ function (_React$Component) {
       }, React.createElement("form", {
         onSubmit: this.handleSubmit
       }, React.createElement("label", null, "File Path:", React.createElement("input", {
+        size: "60",
         type: "text",
         value: this.state.value,
         onChange: this.handleChange
-      })), React.createElement("div", {
+      })), React.createElement("h6", null, "(Please input full path of a test file)"), React.createElement("div", {
         "class": "row col-md-12"
       }, React.createElement("input", {
         type: "submit",
@@ -30458,9 +30469,9 @@ function (_React$Component) {
         "class": "row jd-flex justify-content-between"
       }, React.createElement("div", null, React.createElement("button", {
         onClick: this.toggleButtonState
-      }, " Next Step ")), React.createElement("div", null, React.createElement("button", {
+      }, " Next")), React.createElement("div", null, React.createElement("button", {
         onClick: this.toggleButtonStateStop
-      }, "Stop & Restart")), React.createElement("div", null, React.createElement("button", {
+      }, "Stop")), React.createElement("div", null, React.createElement("button", {
         onClick: this.toggleButtonStateRun
       }, "Fast-Forward")))), React.createElement("div", {
         "class": "box"
@@ -30471,8 +30482,7 @@ function (_React$Component) {
       }, React.createElement(Report, {
         report: this.state.setting.report
       }), React.createElement(MowerList, {
-        mowers: this.state.setting.mowerStates,
-        mowerID: this.state.setting.mowerID
+        mowers: this.state.setting.mowerStates
       })), React.createElement("section", {
         "class": "float-right"
       }, React.createElement(Map, {
@@ -30558,7 +30568,6 @@ function (_React$Component3) {
           mower: mower
         });
       });
-      var mowerID = this.props.mowerID;
       return React.createElement("div", null, React.createElement("h4", {
         "class": "text-blue"
       }, "Mower States"), React.createElement("div", {
@@ -30602,9 +30611,8 @@ function (_React$Component4) {
     key: "render",
     value: function render() {
       // TODO: highlight row
-      var mowerID = this.props.mowerID; //var mower_id = this.props.mower.mower_id;
+      //var mower_id = this.props.mower.mower_id;
       // var isColored = Boolean(mowerID == mower_id);
-
       return React.createElement("tr", null, React.createElement("td", null, this.props.mower.mower_id), React.createElement("td", null, this.props.mower.mowerStatus), React.createElement("td", null, this.props.mower.energyLevel), React.createElement("td", null, this.props.mower.stallTurn));
     }
   }]);

@@ -4,6 +4,7 @@ import com.example.mainpanel.back_end.*;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PatchMapping;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -27,6 +28,7 @@ public class DemoApplication {
 	// open browser: 0.read file 1.initialize map 2.report 3.Mowers States
 	@PostMapping(value = "/simulation")
 	public String startApplication(@RequestBody FilePath filePath) throws JsonProcessingException {
+		String[] mowerAction = new String[2];
 		// 0. read file
 		monitorSim = new SimultaionRun(filePath);
 
@@ -45,7 +47,10 @@ public class DemoApplication {
 		String mapAsString = objectMapper.writeValueAsString(lawnMap);
 		String reportAsString = objectMapper.writeValueAsString(report);
 		String stateAsString = objectMapper.writeValueAsString(mowerStates);
-		return "{\"map\":" + mapAsString + ", \"report\":" + reportAsString + ", \"mowerStates\":" + stateAsString + "}";
+		String mowerAsString = objectMapper.writeValueAsString(mowerAction);
+
+		return "{\"map\":" + mapAsString + ", \"report\":" + reportAsString + ", \"mowerStates\":" + stateAsString + ", \"mowerAction\":" + mowerAsString + "}";
+
 	}
 
 	// stop: 1. terminate application 2. map 3. report 4. Mowers States
@@ -75,7 +80,7 @@ public class DemoApplication {
 	@PatchMapping(value = "/next")
 	public String nextRun() throws JsonProcessingException {
 		// 1. move mower to next - return current move Mower ID
-		String[] mowerID = monitorSim.moveNext();
+		String[] mowerAction = monitorSim.moveNext();
 
 		// 2. map
 		lawnMap = monitorSim.getLawnMap();
@@ -87,11 +92,14 @@ public class DemoApplication {
 		mowerStates = monitorSim.getMowerState();
 
 		// object --> JSON
+
 		ObjectMapper objectMapper = new ObjectMapper();
 		String mapAsString = objectMapper.writeValueAsString(lawnMap);
 		String reportAsString = objectMapper.writeValueAsString(report);
 		String stateAsString = objectMapper.writeValueAsString(mowerStates);
-		return "{\"map\":" + mapAsString + ", \"report\":" + reportAsString + ", \"mowerStates\":" + stateAsString + ", \"mowerID\":" + mowerID + "}";
+		String mowerAsString = objectMapper.writeValueAsString(mowerAction);
+
+		return "{\"map\":" + mapAsString + ", \"report\":" + reportAsString + ", \"mowerStates\":" + stateAsString + ", \"mowerAction\":" + mowerAsString + "}";
 	}
 /*
 	// fast-forward: 1. move mower fast-forward 2. update map 3. report 4.Mowers States
