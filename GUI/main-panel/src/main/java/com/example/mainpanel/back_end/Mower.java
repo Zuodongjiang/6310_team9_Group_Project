@@ -68,7 +68,7 @@ public class Mower {
 	public int stallTurn;
 
 
-	
+
 	//private HashSet<Point> chargeLocations = new HashSet<>();
 
 	public Mower(String direction, int id, int energy_capacity, int numMowers) {
@@ -80,7 +80,7 @@ public class Mower {
 
 		mowerX = 17;
 		mowerY = 17;
-		
+
 		stallTurn = 0;
 
 		//chargeLocations.add(new Point(mowerX,mowerY));//add initial charge location
@@ -103,13 +103,13 @@ public class Mower {
 		yDIR_MAP.put("southwest", -1);
 		yDIR_MAP.put("west", 0);
 		yDIR_MAP.put("northwest", 1);
-		
+
 
 		//put self on the map: code = mowerID*10+100+CHARGE_CODE
 //		int code = mowerID*10 + 100 + CHARGE_CODE;
 	}
-	
-	
+
+
 	private void scan(int mowerID) {
 		curEnergy--;
 		sim.scan(mowerID);
@@ -126,8 +126,8 @@ public class Mower {
 		}
 		***/
 	}
-	
-	
+
+
 	private boolean needScan() {
 		InfoMap mowerMap = cc.getMap(mowerID);
 		int i = mowerX;
@@ -151,6 +151,14 @@ public class Mower {
 		return mowerMap.checkSquare(mowerX + xDIR_MAP.get(mowerDirection), mowerY + yDIR_MAP.get(mowerDirection)) == GRASS_CODE;
 	}
 
+	private boolean cancharge() {
+		if (validMove()==0) {
+			return false;
+		}
+		InfoMap mowerMap = cc.getMap(mowerID);
+		return mowerMap.checkSquare(mowerX + xDIR_MAP.get(mowerDirection), mowerY + yDIR_MAP.get(mowerDirection)) == CHARGE_CODE;
+	}
+
 	// return valid move distance
 	private int validMove() {
 		int a = mowerX + xDIR_MAP.get(mowerDirection);
@@ -159,7 +167,7 @@ public class Mower {
 		int square = mowerMap.checkSquare(a, b);
 		int ret = 0;
 		if (square == EMPTY_CODE || square == GRASS_CODE || square == CHARGE_CODE){
-			ret = 1;	
+			ret = 1;
 		}
 		int square2 = mowerMap.checkSquare(a+xDIR_MAP.get(mowerDirection), b+yDIR_MAP.get(mowerDirection));
 		if ((square2 == EMPTY_CODE || square2 == GRASS_CODE || square2 == CHARGE_CODE) && ret==1){
@@ -171,12 +179,12 @@ public class Mower {
 	// move() : mover the mower, if the mower hit the crate or the fence, make
 	// crashed = true and return, otherwise, generate the motion.
 
-	private void move(int distance) { 
+	private void move(int distance) {
 		int dx = xDIR_MAP.get(mowerDirection);
 		int dy = yDIR_MAP.get(mowerDirection);
 		for (int i=0;i<distance;i++){
 			sim.validateMove(mowerID, dx, dy);
-		}	
+		}
 		curEnergy-=2; //move 1/2 step spend 2 energy
 		//added redirection after move
 		int dir_index = canCutAfterTurning();
@@ -214,7 +222,21 @@ public class Mower {
 		}
 		return -1;
 	}
-	
+
+	private int canChargeAfterTurning() {
+		int i = mowerX ;
+		int j = mowerY;
+		InfoMap mowerMap = cc.getMap(mowerID);
+		int[][] neis = new int[][] { { i, j + 1 }, { i + 1, j + 1 }, { i + 1, j }, { i + 1, j - 1 }, { i, j - 1 },
+				{ i - 1, j - 1 }, { i - 1, j }, { i - 1, j + 1 } };
+		for (int k = 0; k < 8; k++) {
+			if (mowerMap.checkSquare(neis[k][0], neis[k][1]) == CHARGE_CODE) {
+				return k;
+			}
+		}
+		return -1;
+	}
+
 	/***
 	private void recharge(){
 		InfoMap mowerMap = cc.getMap(mowerID);
@@ -223,7 +245,7 @@ public class Mower {
 		int yDir = yDIR_MAP.get(trackNewDirection);
 		int square1 = mowerMap.checkSquare(mowerX+xDir, mowerY+yDir);
 		int square2 = mowerMap.checkSquare(mowerX+2*xDir, mowerY+2*yDir);
-		//recharge if energy is low 
+		//recharge if energy is low
 		if (square1==CHARGE_CODE && curEnergy<=4 && curEnergy>=1){
 			move();
 		} else if ((square1==EMPTY_CODE || square1==GRASS_CODE) && square2==CHARGE_CODE && curEnergy<=4 && curEnergy>=2){
@@ -231,7 +253,7 @@ public class Mower {
 		}
 	}
 	***/
-	
+
 
 
 	// find next boundary, or grass to cut, return the closest one
@@ -304,7 +326,7 @@ public class Mower {
 		// System.out.println(res.toString());
 		return res;
 	}
-	
+
 	/***
 	private boolean isValid(int x, int y) {
 		return x >=0 && x < 31 && y >= 0 && y < 31;
@@ -323,12 +345,15 @@ public class Mower {
 		// Since the mowerMaps is updating, at the beginning of the action, get the
 		// latest map, and the position of the mower;
 		// the map and the mower position is updated in the commchannel.
+		if(curEnergy <= 0) {
+			return ("stall,0");
+		}
 		System.out.println(String.format("mower_%d", mowerID+1));
 		while(stallTurn > 0) {
 			stallTurn--;
 			trackAction = "stall";
 			System.out.println("stall,0");
-			return "stall,0"; 
+			return "stall,0";
 		}
 		mowerX = cc.mowerRelativeLocation[mowerID][0];
 		mowerY = cc.mowerRelativeLocation[mowerID][1];
@@ -347,7 +372,7 @@ public class Mower {
 		int dir_index = canCutAfterTurning();
 		if (dir_index >= 0) {
 			turning(dirs[dir_index]);
-			return String.format("move,%d,%s",trackMoveDistance,trackNewDirection); // return direction when redirect 
+			return String.format("move,%d,%s",trackMoveDistance,trackNewDirection); // return direction when redirect
 		}
 		// find the path, and move one step along the path.
 		path = findPath();
@@ -360,12 +385,12 @@ public class Mower {
 			} else {
 				turning(dir);
 			}
-			
+
 		}
 		return String.format("move,%d,%s",trackMoveDistance,trackNewDirection);
 	}
 
-	
+
 	public void displayActionAndResponses() {
 		// display the mower's actions - no need
 	//	System.out.print(trackAction);
@@ -385,7 +410,7 @@ public class Mower {
 			System.out.println("action not recognized");
 		}
 	}
-	
+
 
 	public void position() {
 		System.out.println("mowerX: " + mowerX + " mowerY: " + mowerY);
@@ -394,74 +419,5 @@ public class Mower {
 	public int getMoveDistance(){
 		return this.trackMoveDistance;
 	}
-	
-	/*** only for test
-	private static void renderHorizontalBar(int size) {
-		System.out.print(" ");
-		for (int k = 0; k < size; k++) {
-			System.out.print("-");
-		}
-		System.out.println("");
-	}
-
-	
-	public static void renderLawn(int[][] lawnInfo) {
-		int i, j;
-		int lawnWidth = 35;
-		int lawnHeight = 35;
-		int charWidth = 2 * lawnWidth + 2;
-
-		// display the rows of the lawn from top to bottom
-		for (j = lawnHeight - 1; j >= 0; j--) {
-			renderHorizontalBar(charWidth);
-
-			// display the Y-direction identifier
-			System.out.print(j);
-
-			// display the contents of each square on this row
-			for (i = 0; i < lawnWidth; i++) {
-				System.out.print("|");
-				// the mower overrides all other contents
-				switch (lawnInfo[i][j]) {
-				case 0:
-					System.out.print("  ");
-					break;
-				case 1:
-					System.out.print(" g");
-					break;
-				case 2:
-					System.out.print(" c");
-					break;
-				case 4:
-					System.out.print(" p");
-				case 3:
-					System.out.print(" f");
-					break;
-				case -1:
-					System.out.print("-1");
-					break;
-				default:
-					String s = String.valueOf(lawnInfo[i][j]);
-//					if(s.length() == 1) s = s + "e";
-					System.out.print(s);
-					break;
-				}
-			}
-			System.out.println("|");
-		}
-		renderHorizontalBar(charWidth);
-
-		// display the column X-direction identifiers
-		System.out.print(" ");
-		for (i = 0; i < lawnWidth; i++) {
-			System.out.print(" " + i);
-		}
-		System.out.println("");
-
-		// display the mower's direction
-		// System.out.println("dir: " + mowerDirection);
-		System.out.println("");
-	}
-	***/
 
 }
