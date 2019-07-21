@@ -209,7 +209,7 @@ public class CommunicationChannel {
 		mowerMaps[mowerTwoID].map = mowerMaps[mowerOneID].map;
 		mowerRelativeLocation[mowerTwoID][0] = mowerRelativeLocation[mowerOneID][0] + dx;
 		mowerRelativeLocation[mowerTwoID][1] = mowerRelativeLocation[mowerOneID][1] + dy;
-		System.out.println(mowerRelativeLocation[mowerTwoID][0] + "  y: " + mowerRelativeLocation[mowerTwoID][1]);
+		//System.out.println(mowerRelativeLocation[mowerTwoID][0] + "  y: " + mowerRelativeLocation[mowerTwoID][1]);
 
 		// merge the discovered boundary
 		mowerBoundary[mowerOneID][0] |= mowerBoundary[mowerTwoID][0];
@@ -267,7 +267,7 @@ public class CommunicationChannel {
 		for (int i = 0; i < mowerMaps.length; i++) {
 			for (int j = i + 1; j < mowerMaps.length; j++) {
 
-				System.out.println(i + " " + j + "  : " + (mowerMaps[i] == mowerMaps[j]));
+			//	System.out.println(i + " " + j + "  : " + (mowerMaps[i] == mowerMaps[j]));
 			}
 		}
 		for (int i = 0; i < 2; i++) {

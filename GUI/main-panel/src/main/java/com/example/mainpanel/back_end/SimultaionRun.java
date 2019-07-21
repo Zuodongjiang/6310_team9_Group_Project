@@ -170,6 +170,7 @@ public class SimultaionRun {
 
 		} else {
 			//stop
+
 			action = "Stop";
 		}
 
@@ -379,7 +380,7 @@ public class SimultaionRun {
 
 	public void stopRun(){
 		pressStop = true;
-		System.out.println(String.format("%d,%d,%d,%d", lawnMap.getLawnWidth()*lawnMap.getLawnHeight(),total_grass,total_cut,numTurn));
+		System.out.println(String.format("%d,%d,%d,%d", lawnMap.getLawnWidth()*lawnMap.getLawnHeight(),total_grass,total_cut,total_step));
 	}
 
 	public boolean checkStop() {
@@ -387,9 +388,10 @@ public class SimultaionRun {
 			System.out.println("activeMowerCount: " + activeMowerCount);
 			System.out.println("mower1: " + mowerList[0].enable);
 			System.out.println("mower2: " + mowerList[1].enable);
-
+			System.out.println(String.format("%d,%d,%d,%d", lawnMap.getLawnWidth()*lawnMap.getLawnHeight(),total_grass,total_cut,total_step));  // zuodong added
 			return true;
 		}
+
 		return false;
 	}
 
