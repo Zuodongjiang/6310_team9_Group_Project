@@ -151,7 +151,7 @@ public class Mower {
 		return mowerMap.checkSquare(mowerX + xDIR_MAP.get(mowerDirection), mowerY + yDIR_MAP.get(mowerDirection)) == GRASS_CODE;
 	}
 
-	private boolean cancharge() {
+	private boolean canCharge() {
 		if (validMove()==0) {
 			return false;
 		}
@@ -361,6 +361,17 @@ public class Mower {
 		if (needScan()) {
 			scan(mowerID);
 			return "scan";
+		}
+		if(curEnergy < 0.5 * maxEnergy) {
+			int dir_index = canChargeAfterTurning();
+			if(canCharge()) {
+				trackMoveDistance = 1;
+				move(trackMoveDistance);
+				return String.format("move,%d,%s",trackMoveDistance,trackNewDirection);
+			} else if(dir_index >= 0) {
+				turning(dirs[dir_index]);
+				return String.format("move,%d,%s",trackMoveDistance,trackNewDirection);
+			}
 		}
 		// check if can cut without turning
 		if (canCut()) {
